@@ -195,19 +195,17 @@ See [doc/STORAGE-SETUP.md](doc/STORAGE-SETUP.md) for detailed storage management
 
 The runner image includes:
 
-- **Runtime**: Ubuntu 22.04 base, bash shell
+- **Runtime**: UBI 8 Minimal base, bash shell
 - **VCS**: Git, Git LFS
-- **Containers**: Docker, Podman, skopeo
-- **CLI Tools**: curl, wget, jq, yq, unzip, sshpass
-- **Build Tools**: Make, gcc, build-essential
+- **Containers**: Podman, podman-docker (docker compatibility), Buildah, Skopeo
+- **CLI Tools**: curl, wget, jq, unzip, sshpass, rsync, vim
+- **Build Tools**: Make, gcc, g++, pkg-config
 - **Languages**: 
-  - Go (golang-go)
-  - Python 3 + pip + venv
+  - Python 3 + pip + devel
   - Node.js + npm
-- **Infrastructure**: 
-  - Ansible + Ansible-core
-  - SSH server and client
-- **Orchestration**: kubectl, helm (optional)
+  - Go (golang)
+- **Infrastructure**: SSH server and client
+- **System**: sudo, dbus, systemd user services
 
 ## Security Considerations
 
@@ -265,33 +263,39 @@ podman rm github-runner
 podman rmi github-actions-runner:latest
 ```
 
-## Troubleshooting
+## Documentation
 
-### Runner fails to register
+**Complete documentation is in the `doc/` directory.** Start with:
 
-- Verify GitHub token has correct permissions (`repo` and `workflow` scopes)
-- Check token hasn't expired
-- Verify repository URL is correct
-- Check network connectivity to github.com
+- **[doc/ORG-RUNNER-SETUP.md](doc/ORG-RUNNER-SETUP.md)** - Organization runner setup (recommended starting point)
+- **[doc/README.md](doc/README.md)** - Documentation index
+- **[doc/TROUBLESHOOTING.md](doc/TROUBLESHOOTING.md)** - Comprehensive troubleshooting guide
+- **[doc/HOST-SELINUX-FIX.md](doc/HOST-SELINUX-FIX.md)** - SELinux issues on enforcing systems
 
-### Out of disk space
+## Quick Troubleshooting
 
-- Monitor `/var/lib/containers` directory
-- Implement image/container cleanup policies
-- Use ephemeral mode to auto-cleanup after jobs
+### 404 Not Found during registration
 
-### High CPU/Memory usage
+- **Cause**: Using PAT instead of registration token
+- **Fix**: Use registration token from `https://github.com/organizations/YOUR-ORG/settings/actions/runners/new`
+- **Note**: Registration tokens expire in 1 hour
+- See [doc/ORG-RUNNER-SETUP.md](doc/ORG-RUNNER-SETUP.md)
 
-- Review active workflow jobs
-- Adjust resource limits in systemd service
-- Consider distributing load across multiple runners
+### /bin/bash: error while loading shared libraries: libtinfo.so.6
+
+- **Cause**: SELinux enforcing mode on host
+- **Fix**: Add `security_opt: - label=disable` to docker-compose.yml (already in place)
+- See [doc/HOST-SELINUX-FIX.md](doc/HOST-SELINUX-FIX.md)
 
 ### Container won't start
 
-- Check Podman daemon is running
-- Review logs: `podman logs <container-id>`
-- Verify environment variables are set correctly
-- Ensure sufficient disk space
+- Check: `podman logs github-runner`
+- Verify: `docker-compose` environment variables are set
+- See: [doc/TROUBLESHOOTING.md](doc/TROUBLESHOOTING.md)
+
+### For all other issues
+
+→ **[doc/TROUBLESHOOTING.md](doc/TROUBLESHOOTING.md)** - Comprehensive troubleshooting guide
 
 ## Advanced Configuration
 
