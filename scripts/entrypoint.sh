@@ -58,16 +58,16 @@ configure_runner() {
     
     cd "${RUNNER_DIR}"
     
-    # Ensure .runner directory exists with correct permissions
+    # Ensure .runner directory exists with permissive permissions
     # This is critical for mounted volumes where permissions might be wrong
     if [[ ! -d "${RUNNER_HOME}/.runner" ]]; then
         mkdir -p "${RUNNER_HOME}/.runner"
     fi
     
-    # Fix permissions on .runner directory
-    # Ensure runner user (not root) owns it
-    chown -R runner:runner "${RUNNER_HOME}/.runner" 2>/dev/null || true
-    chmod 700 "${RUNNER_HOME}/.runner" 2>/dev/null || true
+    # Make directory world-writable during registration
+    # config.sh might create files as root, so we need to allow writes
+    chmod 777 "${RUNNER_HOME}/.runner" 2>/dev/null || true
+    chown runner:runner "${RUNNER_HOME}/.runner" 2>/dev/null || true
     
     # Build registration URL
     local register_url="${GITHUB_REPO_URL:-https://github.com/$GITHUB_ORG}"
@@ -105,15 +105,20 @@ configure_runner() {
     if ./config.sh "${config_args[@]}"; then
         log_info "Runner registered successfully"
         
-        # Fix permissions again after config.sh (it might create files as root)
+        # Fix ownership and permissions after config.sh
+        # config.sh might create files with wrong ownership
         chown -R runner:runner "${RUNNER_HOME}/.runner" 2>/dev/null || true
-        chmod 700 "${RUNNER_HOME}/.runner" 2>/dev/null || true
         
-        # Ensure all files in .runner are readable by runner user
+        # Make sure runner can read all files, even if created by root
+        chmod -R u+r,u+w,g-rwx,o-rwx "${RUNNER_HOME}/.runner" 2>/dev/null || true
         find "${RUNNER_HOME}/.runner" -type f -exec chmod 600 {} \; 2>/dev/null || true
         find "${RUNNER_HOME}/.runner" -type d -exec chmod 700 {} \; 2>/dev/null || true
         
+        # Create configured flag
         touch "${RUNNER_HOME}/.configured"
+        chmod 644 "${RUNNER_HOME}/.configured" 2>/dev/null || true
+        
+        log_info "Runner configuration persisted successfully"
     else
         log_error "Failed to register runner"
         exit 1
