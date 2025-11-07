@@ -66,8 +66,8 @@ configure_runner() {
     
     # Make directory world-writable during registration
     # config.sh might create files as root, so we need to allow writes
-    chmod 777 "${RUNNER_HOME}/.runner" 2>/dev/null || true
-    chown runner:runner "${RUNNER_HOME}/.runner" 2>/dev/null || true
+    sudo chmod 777 "${RUNNER_HOME}/.runner" 2>/dev/null || chmod 777 "${RUNNER_HOME}/.runner" 2>/dev/null || true
+    sudo chown runner:runner "${RUNNER_HOME}/.runner" 2>/dev/null || chown runner:runner "${RUNNER_HOME}/.runner" 2>/dev/null || true
     
     # Build registration URL
     local register_url="${GITHUB_REPO_URL:-https://github.com/$GITHUB_ORG}"
@@ -107,12 +107,12 @@ configure_runner() {
         
         # Fix ownership and permissions after config.sh
         # config.sh might create files with wrong ownership
-        chown -R runner:runner "${RUNNER_HOME}/.runner" 2>/dev/null || true
+        sudo chown -R runner:runner "${RUNNER_HOME}/.runner" 2>/dev/null || chown -R runner:runner "${RUNNER_HOME}/.runner" 2>/dev/null || true
         
         # Make sure runner can read all files, even if created by root
-        chmod -R u+r,u+w,g-rwx,o-rwx "${RUNNER_HOME}/.runner" 2>/dev/null || true
-        find "${RUNNER_HOME}/.runner" -type f -exec chmod 600 {} \; 2>/dev/null || true
-        find "${RUNNER_HOME}/.runner" -type d -exec chmod 700 {} \; 2>/dev/null || true
+        sudo chmod -R u+r,u+w,g-rwx,o-rwx "${RUNNER_HOME}/.runner" 2>/dev/null || chmod -R u+r,u+w,g-rwx,o-rwx "${RUNNER_HOME}/.runner" 2>/dev/null || true
+        sudo find "${RUNNER_HOME}/.runner" -type f -exec chmod 600 {} \; 2>/dev/null || find "${RUNNER_HOME}/.runner" -type f -exec chmod 600 {} \; 2>/dev/null || true
+        sudo find "${RUNNER_HOME}/.runner" -type d -exec chmod 700 {} \; 2>/dev/null || find "${RUNNER_HOME}/.runner" -type d -exec chmod 700 {} \; 2>/dev/null || true
         
         # Create configured flag
         touch "${RUNNER_HOME}/.configured"
