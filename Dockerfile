@@ -21,9 +21,10 @@ ENV RUNNER_ALLOW_RUNASROOT=false \
     RUNNER_HOME=/home/runner \
     PATH="/opt/runner/bin:${PATH}"
 
-# Install base packages and dependencies using yum (UBI 8 full)
+# Install base packages and dependencies using dnf (UBI 8 full)
+# dnf is the modern package manager in RHEL/UBI 8+
 # UBI 8 is x86-64-v1 compatible - includes baseline 64-bit x86 instructions
-RUN yum install -y \
+RUN dnf install -y \
     # Essential tools
     curl \
     wget \
@@ -72,8 +73,8 @@ RUN yum install -y \
     rsync \
     vim-minimal \
             # Cleanup
-            && yum clean all \
-            && rm -rf /var/cache/yum/* \
+            && dnf clean all \
+            && rm -rf /var/cache/dnf/* \
             && rm -rf /tmp/*
 
 # Create runner user with home directory
