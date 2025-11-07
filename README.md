@@ -285,6 +285,7 @@ podman rmi salexson/github-action-runner:latest
 **Complete documentation is in the `doc/` directory.** Start with:
 
 - **[doc/ORG-RUNNER-SETUP.md](doc/ORG-RUNNER-SETUP.md)** - Organization runner setup (recommended starting point)
+- **[doc/VOLUME-SETUP.md](doc/VOLUME-SETUP.md)** - Volume and storage configuration for runner config and work directories
 - **[doc/README.md](doc/README.md)** - Documentation index
 - **[doc/TROUBLESHOOTING.md](doc/TROUBLESHOOTING.md)** - Comprehensive troubleshooting guide
 - **[doc/HOST-SELINUX-FIX.md](doc/HOST-SELINUX-FIX.md)** - SELinux issues on enforcing systems
