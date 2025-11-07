@@ -1,0 +1,59 @@
+[Unit]
+Description=GitHub Actions Runner - Docker Compose
+Documentation=https://docs.github.com/en/actions/hosting-your-own-runners
+After=network-online.target docker.service podman.service
+Wants=network-online.target
+StartLimitInterval=600
+StartLimitBurst=3
+
+[Service]
+Type=exec
+User=gha
+Group=gha
+WorkingDirectory=/home/gha/github-actions-runner-podman
+
+# Load environment from .env file
+EnvironmentFile=%d/github-actions-runner.env
+
+# Ensure docker-compose is available
+ExecStartPre=/usr/bin/which docker-compose
+
+# Pull latest images
+ExecStartPre=/usr/bin/docker-compose pull --quiet
+
+# Start services
+ExecStart=/usr/bin/docker-compose up \
+  --abort-on-container-exit \
+  --remove-orphans
+
+# Stop services
+ExecStop=/usr/bin/docker-compose down \
+  --remove-orphans
+
+# Graceful restart on config change
+ExecReload=/usr/bin/docker-compose up -d \
+  --force-recreate
+
+# Restart policy
+Restart=on-failure
+RestartSec=15
+
+# Security
+PrivateTmp=yes
+NoNewPrivileges=true
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=github-runner-compose
+
+# Resource limits
+MemoryLimit=8G
+CPUQuota=800%
+TasksMax=1024
+
+# Timeouts
+TimeoutStartSec=300
+TimeoutStopSec=60
+
+[Install]
+WantedBy=multi-user.target
+

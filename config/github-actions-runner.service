@@ -1,0 +1,71 @@
+[Unit]
+Description=GitHub Actions Self-Hosted Runner
+Documentation=https://docs.github.com/en/actions/hosting-your-own-runners
+After=network-online.target podman.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=gha
+Group=gha
+WorkingDirectory=/opt/gha
+
+# Environment variables - update these!
+Environment="GITHUB_TOKEN=YOUR_GITHUB_TOKEN_HERE"
+Environment="GITHUB_REPO_URL=https://github.com/YOUR-ORG/YOUR-REPO"
+# OR for organization runners:
+# Environment="GITHUB_ORG=YOUR-ORG"
+Environment="RUNNER_NAME=%h-runner"
+Environment="RUNNER_LABELS=podman,linux,docker"
+Environment="RUNNER_EPHEMERAL=false"
+Environment="RUNNER_WORK_DIR=/opt/github-runner/_work"
+
+# Restart policy
+Restart=on-failure
+RestartSec=5
+StartLimitInterval=60
+StartLimitBurst=3
+
+# Service execution
+ExecStart=/usr/bin/podman run \
+  --rm \
+  --name github-actions-runner \
+  --pull newer \
+  --restart no \
+  --env GITHUB_TOKEN \
+  --env GITHUB_REPO_URL \
+  --env RUNNER_NAME \
+  --env RUNNER_LABELS \
+  --env RUNNER_EPHEMERAL \
+  --env RUNNER_WORK_DIR \
+  --volume /run/podman/podman.sock:/var/run/docker.sock:rw \
+  --volume /opt/github-runner:/home/runner \
+  --cpus 2 \
+  --memory 2g \
+  --memory-reservation 1g \
+  --log-driver json-file \
+  --log-opt max-size=100m \
+  --log-opt max-file=5 \
+  --security-opt no-new-privileges:true \
+  github-actions-runner:latest
+
+# Cleanup on exit
+ExecStop=/usr/bin/podman stop -t 30 github-actions-runner
+
+# Security options
+PrivateTmp=yes
+PrivateDevices=yes
+NoNewPrivileges=true
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=github-runner
+
+# Resource limits (optional)
+MemoryLimit=2G
+CPUQuota=200%
+
+[Install]
+WantedBy=multi-user.target
+

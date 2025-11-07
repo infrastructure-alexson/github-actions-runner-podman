@@ -1,0 +1,134 @@
+version: '3.9'
+
+###############################################################################
+# GitHub Actions Self-Hosted Runner - Docker Compose Configuration
+# 
+# Usage:
+#   docker-compose up -d
+#   docker-compose down
+#
+# Environment:
+#   - GITHUB_REPOSITORY: Repository (e.g., owner/repo)
+#   - RUNNER_TOKEN: Registration token from GitHub
+#   - RUNNER_NAME: Runner display name
+#   - RUNNER_LABELS: Comma-separated labels
+#   - RUNNER_WORKDIR: Working directory (default: /home/runner/_work)
+#
+# Example:
+#   export GITHUB_REPOSITORY=owner/repo
+#   export RUNNER_TOKEN=ghs_xxxxx
+#   export RUNNER_NAME=runner-01
+#   export RUNNER_LABELS=podman,linux,amd64
+#   docker-compose up -d
+###############################################################################
+
+services:
+  github-runner:
+    image: docker.io/salexson/github-action-runner:latest
+    container_name: github-runner
+    hostname: github-runner
+    
+    # Restart policy
+    restart: unless-stopped
+    restart_policy:
+      condition: on-failure
+      delay: 5s
+      max_attempts: 5
+      window: 60s
+    
+    # Environment variables
+    environment:
+      # Required
+      GITHUB_REPOSITORY: ${GITHUB_REPOSITORY}
+      RUNNER_TOKEN: ${RUNNER_TOKEN}
+      RUNNER_NAME: ${RUNNER_NAME:-runner-01}
+      RUNNER_LABELS: ${RUNNER_LABELS:-podman,linux,amd64}
+      
+      # Optional
+      RUNNER_WORKDIR: ${RUNNER_WORKDIR:-/home/runner/_work}
+      RUNNER_GROUPS: ${RUNNER_GROUPS:-default}
+      RUNNER_ALLOW_RUNASROOT: ${RUNNER_ALLOW_RUNASROOT:-true}
+      
+      # System
+      LANG: en_US.UTF-8
+      LC_ALL: en_US.UTF-8
+    
+    # Volume mounts
+    volumes:
+      # Essential: Podman/Docker socket for container operations
+      - /var/run/podman/podman.sock:/var/run/podman/podman.sock
+      
+      # Essential: Working directory for workflow files
+      - ${WORK_DIR:-.}/runner-work:/home/runner/_work
+      
+      # Recommended: Runner configuration (persistent state)
+      - ${CONFIG_DIR:-.}/runner-config:/home/runner/.runner
+      
+      # Optional: SSH keys for git operations
+      # - ~/.ssh:/home/runner/.ssh:ro
+      
+      # Optional: Cache directory
+      # - ${CACHE_DIR:-.}/runner-cache:/home/runner/.cache
+    
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: ${RUNNER_CPUS:-2}
+          memory: ${RUNNER_MEMORY:-4G}
+        reservations:
+          cpus: ${RUNNER_CPUS_RESERVE:-1}
+          memory: ${RUNNER_MEMORY_RESERVE:-2G}
+    
+    # Logging
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+        labels: "runner=github-action-runner"
+    
+    # Labels for identification
+    labels:
+      - "app=github-action-runner"
+      - "version=1.0.0"
+      - "managed=true"
+    
+    # Health check
+    healthcheck:
+      test: ["/bin/bash", "-c", "pgrep -f 'Runner.Server' || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    
+    # Platform specification (for multi-arch builds)
+    platform: linux/amd64
+
+  # Optional: Additional runner instance for parallel workloads
+  # Uncomment to enable
+  # github-runner-2:
+  #   extends: github-runner
+  #   container_name: github-runner-2
+  #   hostname: github-runner-2
+  #   environment:
+  #     <<: *default-environment
+  #     RUNNER_NAME: runner-02
+  #     RUNNER_LABELS: podman,linux,amd64,parallel
+  #   volumes:
+  #     - /var/run/podman/podman.sock:/var/run/podman/podman.sock
+  #     - ./runner-work-2:/home/runner/_work
+  #     - ./runner-config-2:/home/runner/.runner
+
+networks:
+  default:
+    name: github-runner-network
+    driver: bridge
+
+volumes:
+  # Named volumes (optional)
+  runner-work:
+    driver: local
+  runner-config:
+    driver: local
+

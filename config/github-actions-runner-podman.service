@@ -1,0 +1,107 @@
+[Unit]
+Description=GitHub Actions Runner - Podman Container
+Documentation=https://docs.github.com/en/actions/hosting-your-own-runners
+After=network-online.target podman.service
+Wants=network-online.target
+StartLimitInterval=600
+StartLimitBurst=3
+
+[Service]
+Type=exec
+User=gha
+Group=gha
+WorkingDirectory=/home/gha
+
+# Environment configuration
+Environment="PODMAN_SYSTEMD_UNIT=%n"
+Environment="NOTIFY_SOCKET=%t/podman-notify-%N.sock"
+
+# Load environment variables from file (optional)
+EnvironmentFile=-/home/gha/.runner.env
+
+# GitHub Configuration (set in EnvironmentFile or here)
+Environment="GITHUB_TOKEN=YOUR_GITHUB_TOKEN_HERE"
+Environment="GITHUB_REPO_URL=https://github.com/YOUR-ORG/YOUR-REPO"
+
+# Runner Configuration
+Environment="RUNNER_NAME=%h-runner"
+Environment="RUNNER_LABELS=podman,linux,docker"
+Environment="RUNNER_WORK_DIR=./_work"
+Environment="RUNNER_EPHEMERAL=false"
+Environment="RUNNER_REPLACE=true"
+
+# Storage Configuration
+Environment="RUNNER_WORK_VOLUME=/opt/gha"
+
+# User Configuration
+Environment="RUNNER_USER=gha"
+Environment="RUNNER_GROUP=gha"
+
+# Container Configuration
+ExecStartPre=/usr/bin/podman pull github-actions-runner:latest
+ExecStart=/usr/bin/podman run \
+  --rm \
+  --name github-runner \
+  --pull=always \
+  -u 1001:1001 \
+  --hostname=%h \
+  --env GITHUB_TOKEN \
+  --env GITHUB_REPO_URL \
+  --env RUNNER_NAME \
+  --env RUNNER_LABELS \
+  --env RUNNER_WORK_DIR \
+  --env RUNNER_EPHEMERAL \
+  --env RUNNER_REPLACE \
+  --env RUNNER_WORK_VOLUME \
+  --volume /run/podman/podman.sock:/var/run/docker.sock:rw \
+  --volume /opt/gha:/opt/gha:rw \
+  --cpus 4 \
+  --memory 4g \
+  --memory-swap 4g \
+  --memory-reservation 2g \
+  --restart=no \
+  --log-driver=journald \
+  --log-opt tag="github-runner" \
+  --log-opt labels="service=github-actions" \
+  --security-opt=no-new-privileges:true \
+  github-actions-runner:latest
+
+ExecStop=/usr/bin/podman stop -t 30 github-runner
+
+# Restart policy
+Restart=on-failure
+RestartSec=10
+StartLimitAction=reboot-force
+
+# Security options
+PrivateTmp=yes
+PrivateDevices=no
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=yes
+ReadWritePaths=/opt/gha
+
+# Logging and output
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=github-runner
+StandardOutputFileMax=10M
+
+# Cleanup on exit
+KillMode=mixed
+KillSignal=SIGTERM
+TimeoutStopSec=30
+
+# Process accounting
+CPUAccounting=yes
+MemoryAccounting=yes
+TasksAccounting=yes
+
+# Resource limits (optional - set via deploy)
+MemoryLimit=4G
+CPUQuota=400%
+TasksMax=512
+
+[Install]
+WantedBy=multi-user.target
+

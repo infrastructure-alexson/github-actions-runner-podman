@@ -1,0 +1,240 @@
+# Podman Pod Configuration for GitHub Actions Runners
+# Provides network isolation and resource management for multiple runners
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: github-actions-runners
+  namespace: default
+
+spec:
+  # Pod DNS configuration
+  dnsPolicy: ClusterFirst
+  dnsConfig:
+    nameservers:
+      - 8.8.8.8
+      - 8.8.4.4
+
+  # Containers in the pod
+  containers:
+    # Primary runner container
+    - name: runner-1
+      image: localhost/github-actions-runner:latest
+      imagePullPolicy: IfNotPresent
+      
+      # Environment variables
+      env:
+        - name: GITHUB_REPO_URL
+          value: "https://github.com/YOUR-ORG/YOUR-REPO"
+        - name: GITHUB_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: github-runner-secret
+              key: token
+        - name: RUNNER_NAME
+          value: "podman-runner-1"
+        - name: RUNNER_LABELS
+          value: "podman,linux,docker"
+        - name: RUNNER_EPHEMERAL
+          value: "false"
+        - name: RUNNER_WORK_DIR
+          value: "/home/runner/_work"
+      
+      # Resource requests and limits
+      resources:
+        requests:
+          memory: "1Gi"
+          cpu: "1"
+        limits:
+          memory: "2Gi"
+          cpu: "2"
+      
+      # Volume mounts
+      volumeMounts:
+        # Docker/Podman socket for container support
+        - name: podman-socket
+          mountPath: /var/run/docker.sock
+          readOnly: false
+        
+        # Persistent storage for work files
+        - name: runner-work
+          mountPath: /home/runner/_work
+        
+        # Persistent storage for runner state
+        - name: runner-home
+          mountPath: /home/runner
+      
+      # Liveness probe
+      livenessProbe:
+        exec:
+          command:
+            - test
+            - -f
+            - /home/runner/.configured
+        initialDelaySeconds: 60
+        periodSeconds: 30
+        timeoutSeconds: 10
+        failureThreshold: 3
+      
+      # Readiness probe
+      readinessProbe:
+        exec:
+          command:
+            - test
+            - -f
+            - /home/runner/.configured
+        initialDelaySeconds: 30
+        periodSeconds: 10
+        timeoutSeconds: 5
+        failureThreshold: 2
+      
+      # Security context
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: false
+        capabilities:
+          drop:
+            - ALL
+          add:
+            - NET_BIND_SERVICE
+
+  # Pod volumes
+  volumes:
+    # Host socket for container operations
+    - name: podman-socket
+      hostPath:
+        path: /run/podman/podman.sock
+        type: Socket
+    
+    # Work directory storage
+    - name: runner-work
+      emptyDir:
+        medium: Memory
+        sizeLimit: 10Gi
+    
+    # Runner home directory storage
+    - name: runner-home
+      emptyDir:
+        sizeLimit: 5Gi
+
+  # Pod security policy
+  securityContext:
+    runAsNonRoot: true
+    fsNonRoot: true
+
+  # Restart policy
+  restartPolicy: Always
+
+  # Termination grace period (for graceful shutdown)
+  terminationGracePeriodSeconds: 30
+
+---
+# Kubernetes StatefulSet alternative (for k8s deployments)
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: github-actions-runner
+  namespace: default
+spec:
+  serviceName: github-actions-runner
+  replicas: 1
+  selector:
+    matchLabels:
+      app: github-runner
+  template:
+    metadata:
+      labels:
+        app: github-runner
+    spec:
+      serviceAccountName: default
+      
+      # Init container to wait for socket
+      initContainers:
+        - name: wait-socket
+          image: busybox:latest
+          command: ['sh', '-c', 'until test -e /var/run/docker.sock; do sleep 1; done']
+          volumeMounts:
+            - name: podman-socket
+              mountPath: /var/run
+      
+      containers:
+        - name: runner
+          image: localhost/github-actions-runner:latest
+          imagePullPolicy: IfNotPresent
+          
+          env:
+            - name: GITHUB_REPO_URL
+              value: "https://github.com/YOUR-ORG/YOUR-REPO"
+            - name: GITHUB_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: github-runner-secret
+                  key: token
+            - name: RUNNER_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: RUNNER_LABELS
+              value: "kubernetes,self-hosted"
+            - name: RUNNER_EPHEMERAL
+              value: "false"
+          
+          resources:
+            requests:
+              memory: "1Gi"
+              cpu: "1"
+            limits:
+              memory: "2Gi"
+              cpu: "2"
+          
+          volumeMounts:
+            - name: podman-socket
+              mountPath: /var/run/docker.sock
+            - name: runner-work
+              mountPath: /home/runner/_work
+            - name: runner-home
+              mountPath: /home/runner
+          
+          livenessProbe:
+            exec:
+              command:
+                - test
+                - -f
+                - /home/runner/.configured
+            initialDelaySeconds: 60
+            periodSeconds: 30
+          
+          readinessProbe:
+            exec:
+              command:
+                - test
+                - -f
+                - /home/runner/.configured
+            initialDelaySeconds: 30
+            periodSeconds: 10
+      
+      volumes:
+        - name: podman-socket
+          hostPath:
+            path: /run/podman/podman.sock
+            type: Socket
+        - name: runner-work
+          emptyDir: {}
+        - name: runner-home
+          emptyDir: {}
+      
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+  
+  # Persistent volume claims for stateful data
+  volumeClaimTemplates:
+    - metadata:
+        name: runner-persistent
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+          requests:
+            storage: 10Gi
+
