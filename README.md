@@ -1,23 +1,25 @@
-# GitHub Actions Runner - UBI 9 Minimal Base Image
+# GitHub Actions Runner - Podman with Docker Compatibility
 
-A production-ready, enterprise-grade containerized GitHub Actions self-hosted runner based on Red Hat UBI 9 Minimal.
+A production-ready, enterprise-grade containerized GitHub Actions self-hosted runner based on Red Hat UBI 9 Minimal with Podman and docker compatibility.
 
 **Base Image**: `registry.access.redhat.com/ubi9/ubi-minimal:latest`  
+**Container Tool**: Podman (with podman-docker for docker compatibility)  
 **Image Size**: ~350MB (50% smaller than Ubuntu-based images)  
 **Build Time**: 2-3 minutes (40% faster)  
-**Support**: 10-year enterprise support  
+**Support**: 10-year enterprise support from Red Hat  
 
 ## Overview
 
-This project provides a minimal, secure, and optimized GitHub Actions self-hosted runner container image based on Red Hat's Universal Base Image 9 (UBI 9 Minimal).
+This project provides a minimal, secure, and optimized GitHub Actions self-hosted runner container image based on Red Hat's Universal Base Image 9 (UBI 9 Minimal) with **Podman as the primary container tool** and **podman-docker compatibility layer** for Docker command support.
 
 ## Features
 
 - ✅ **UBI 9 Minimal Base**: Enterprise-grade, Red Hat backed, minimal footprint
+- ✅ **Podman First**: Modern, secure, rootless-capable container runtime
+- ✅ **Docker Compatible**: `docker` commands work via podman-docker wrapper
 - ✅ **Self-Hosted Runner**: Full GitHub Actions runner support for CI/CD pipelines
-- ✅ **Multi-Tool Support**: Pre-installed with essential infrastructure tools
-- ✅ **Security Hardened**: Non-root user, minimal attack surface, signed packages
-- ✅ **Container Optimized**: Purpose-built for containerization
+- ✅ **Security Hardened**: Non-root user, rootless support, minimal attack surface
+- ✅ **Advanced Tools**: Buildah (image building) and Skopeo (image utilities) included
 - ✅ **Multi-Platform**: Supports amd64 and arm64 architectures
 - ✅ **Fast Deployment**: 40-50% faster than traditional base images
 - ✅ **Enterprise Support**: 10-year support window from Red Hat
@@ -26,7 +28,7 @@ This project provides a minimal, secure, and optimized GitHub Actions self-hoste
 
 ### Prerequisites
 
-- **Container Runtime**: Podman 4.0+ or Docker 20.10+
+- **Container Runtime**: Podman 4.0+ (Docker 20.10+ also supported via podman-docker compatibility)
 - **GitHub Token**: Registration token from organization (expires in 1 hour)
 - **System**: Rocky Linux 8/9, RHEL 8/9, or compatible
 - **Storage**: 10GB+ available for image and working directory
@@ -41,23 +43,20 @@ This project provides a minimal, secure, and optimized GitHub Actions self-hoste
 cd github-actions-runner-podman
 ```
 
-2. **Build the image (UBI 9 Minimal base):**
+2. **Build the image (UBI 9 Minimal + Podman):**
 
 ```bash
-# Build locally
+# Build with Podman
 podman build -t github-action-runner:latest .
 
 # Or use the build script
 ./scripts/build-and-push-podman.sh --no-push
 ```
 
-3. **Deploy the runner:**
+3. **Deploy the runner with Podman:**
 
 ```bash
-# Using docker-compose (recommended)
-docker-compose up -d
-
-# Or using Podman directly
+# Using Podman (recommended for rootless containers)
 podman run -d \
   --name github-runner \
   -e GITHUB_REPOSITORY="organization-name" \
@@ -67,6 +66,13 @@ podman run -d \
   -v /var/run/podman/podman.sock:/var/run/podman/podman.sock \
   -v /opt/runner-work:/home/runner/_work \
   github-action-runner:latest
+```
+
+Or with **docker-compose** (docker commands work via podman-docker):
+
+```bash
+# docker-compose works via podman-docker wrapper
+docker-compose up -d
 ```
 
 ### Docker Compose Deployment
