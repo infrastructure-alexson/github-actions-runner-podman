@@ -1,42 +1,43 @@
 # GitHub Actions Runner - Podman with Docker Compatibility
 
-A production-ready, enterprise-grade containerized GitHub Actions self-hosted runner based on Red Hat UBI 8 Minimal with Podman and docker compatibility.
+A production-ready, enterprise-grade containerized GitHub Actions self-hosted runner based on Ubuntu 22.04 LTS with Podman and docker compatibility.
 
-**Base Image**: `registry.access.redhat.com/ubi8/ubi-minimal:latest`  
+**Base Image**: `ubuntu:22.04`  
 **Container Tool**: Podman (with podman-docker for docker compatibility)  
-**Image Size**: ~360MB (50% smaller than Ubuntu-based images)  
+**Image Size**: ~800MB (includes extensive tooling)  
 **CPU Support**: x86-64-v1+ (broad processor compatibility - 2003+)  
-**Build Time**: 2-3 minutes (40% faster)  
-**Support**: 10-year enterprise support from Red Hat  
+**Official Recommendation**: ✅ Ubuntu 22.04 is the officially recommended base for GitHub Actions  
+**Support**: Long-term support (LTS) until 2032  
 
 ## Overview
 
-This project provides a minimal, secure, and optimized GitHub Actions self-hosted runner container image based on Red Hat's Universal Base Image 8 Minimal (UBI 8) with **Podman as the primary container tool** and **podman-docker compatibility layer** for Docker command support.
+This project provides a comprehensive GitHub Actions self-hosted runner container image based on Ubuntu 22.04 LTS with **Podman as the primary container tool** and **podman-docker compatibility layer** for Docker command support.
 
-UBI 8 was chosen for **broad CPU compatibility** (x86-64-v1+, 2003+) while maintaining enterprise-grade security and support.
+Ubuntu 22.04 LTS was chosen as the **officially recommended base for GitHub Actions** with broad hardware compatibility and extensive tool ecosystem.
 
 ## Features
 
-- ✅ **UBI 8 Minimal Base**: Enterprise-grade, Red Hat backed, broad CPU compatibility
+- ✅ **Ubuntu 22.04 LTS Base**: Official GitHub Actions recommended base, broad compatibility
 - ✅ **Podman First**: Modern, secure, rootless-capable container runtime
 - ✅ **Docker Compatible**: `docker` commands work via podman-docker wrapper
 - ✅ **Self-Hosted Runner**: Full GitHub Actions runner support for CI/CD pipelines
 - ✅ **Security Hardened**: Non-root user, rootless support, minimal attack surface
 - ✅ **Advanced Tools**: Buildah (image building) and Skopeo (image utilities) included
+- ✅ **Language Support**: Python 3, Node.js/npm, Go, and Ansible pre-installed
 - ✅ **Multi-Platform**: Supports amd64 and arm64 architectures
-- ✅ **Fast Deployment**: 40-50% faster than traditional base images
-- ✅ **Enterprise Support**: 10-year support window from Red Hat
+- ✅ **Long-Term Support**: Ubuntu 22.04 LTS support until 2032
+- ✅ **Comprehensive Tooling**: Git, SSH, curl, jq, findutils, procps, and more
 
 ## Quick Start
 
 ### Prerequisites
 
 - **Container Runtime**: Podman 4.0+ (Docker 20.10+ also supported via podman-docker compatibility)
-- **CPU**: x86-64 processor from 2003+ (x86-64-v1 baseline). See [CPU Compatibility](doc/CPU-COMPATIBILITY.md) for details
+- **CPU**: x86-64 processor from 2003+ (x86-64-v1 baseline)
 - **GitHub Token**: Registration token from organization (expires in 1 hour)
-- **System**: Rocky Linux 8/9, RHEL 8/9, or compatible
-- **Storage**: 10GB+ available for image and working directory
-- **Network**: Outbound HTTPS to github.com and registry.access.redhat.com
+- **System**: Rocky Linux 8/9, RHEL 8/9, Ubuntu 20.04+, or compatible
+- **Storage**: 15GB+ available for image and working directory
+- **Network**: Outbound HTTPS to github.com and container registries
 - **Memory**: 2GB+ RAM (4GB+ recommended for concurrent workflows)
 
 ### Basic Deployment
@@ -47,14 +48,14 @@ UBI 8 was chosen for **broad CPU compatibility** (x86-64-v1+, 2003+) while maint
 cd github-actions-runner-podman
 ```
 
-2. **Build the image (UBI 8 Minimal + Podman):**
+2. **Build the image (Ubuntu 22.04 LTS + Podman):**
 
 ```bash
 # Build with Podman
-podman build -t github-action-runner:latest .
+podman build -t salexson/github-action-runner:latest .
 
 # Or use the build script
-./scripts/build-and-push-podman.sh --no-push
+./scripts/build-and-push-podman.sh
 ```
 
 3. **Deploy the runner with Podman:**
@@ -63,33 +64,45 @@ podman build -t github-action-runner:latest .
 # Using Podman (recommended for rootless containers)
 podman run -d \
   --name github-runner \
-  -e GITHUB_REPOSITORY="organization-name" \
-  -e GITHUB_TOKEN="your_token_here" \
+  -e GITHUB_ORG="organization-name" \
+  -e GITHUB_TOKEN="your_registration_token" \
   -e RUNNER_NAME="org-runner-01" \
-  -e RUNNER_LABELS="organization,podman,linux" \
-  -v /var/run/podman/podman.sock:/var/run/podman/podman.sock \
-  -v /opt/runner-work:/home/runner/_work \
-  github-action-runner:latest
+  -e RUNNER_LABELS="self-hosted,linux,podman" \
+  -v /run/user/984/podman/podman.sock:/var/run/docker.sock:ro \
+  -v /opt/gha/runner-work:/home/runner/_work \
+  -v /opt/gha/runner-config:/home/runner/.runner \
+  salexson/github-action-runner:latest
 ```
 
-Or with **docker-compose** (docker commands work via podman-docker):
+Or with **podman-compose** (recommended for production):
 
 ```bash
-# docker-compose works via podman-docker wrapper
-docker-compose up -d
+# Copy .env template and configure
+cp config/env.example .env
+nano .env
+
+# Deploy with podman-compose
+podman-compose up -d
 ```
 
-### Docker Compose Deployment
+### Podman Compose Deployment (Recommended)
 
 ```bash
 # Copy environment template
-cp config/.env.example config/.env
+cp config/env.example .env
 
-# Edit with your GitHub credentials
-nano config/.env
+# Edit with your GitHub credentials and registration token
+nano .env
 
-# Deploy the stack
-docker-compose up -d
+# Deploy the stack with podman-compose
+podman-compose up -d
+
+# Check status
+podman-compose logs -f
+
+# Or check with podman directly
+podman ps
+podman logs github-runner
 ```
 
 ## Configuration
@@ -98,12 +111,15 @@ docker-compose up -d
 
 | Variable | Description | Required |
 |----------|-------------|----------|
-| `GITHUB_REPO_URL` | GitHub repository URL | Yes |
-| `GITHUB_TOKEN` | Personal access token for runner registration | Yes |
+| `GITHUB_ORG` | GitHub organization name (for org runners) | Yes* |
+| `GITHUB_REPO_URL` | GitHub repository URL (for repo runners) | Yes* |
+| `GITHUB_TOKEN` | Registration token from GitHub (expires in 1 hour) | Yes |
 | `RUNNER_NAME` | Name for this runner instance | No (auto-generated) |
-| `RUNNER_LABELS` | Comma-separated labels for the runner | No |
-| `RUNNER_WORK_DIR` | Working directory for runner | No (default: `_work`) |
-| `RUNNER_EPHEMERAL` | Enable ephemeral mode (auto-cleanup) | No (default: `false`) |
+| `RUNNER_LABELS` | Comma-separated labels for the runner | No (includes: `self-hosted,linux,podman`) |
+| `RUNNER_WORK_DIR` | Working directory for runner | No (default: `/_work`) |
+| `RUNNER_GROUPS` | Runner group membership | No (default: `default`) |
+
+*Use either `GITHUB_ORG` (organization runner) or `GITHUB_REPO_URL` (repository runner), not both
 
 ### Example Configuration - Organization Level
 
@@ -111,14 +127,14 @@ Create `.env` file:
 
 ```bash
 # Organization-level runner (all repos can use)
-GITHUB_REPOSITORY=infrastructure-alexson
-GITHUB_TOKEN=ghs_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+GITHUB_ORG=infrastructure-alexson
+GITHUB_TOKEN=ghr_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 RUNNER_NAME=org-runner-01
-RUNNER_LABELS=organization,podman,linux,amd64
-WORK_DIR=/opt/runner-work
-CONFIG_DIR=/opt/runner-config
+RUNNER_LABELS=self-hosted,linux,podman,x86_64
+RUNNER_WORK_DIR=./_work
+CONFIG_DIR=./runner-config
 RUNNER_CPUS=2
-RUNNER_MEMORY=4G
+RUNNER_MEMORY=2g
 ```
 
 ## Deployment Options
@@ -128,11 +144,11 @@ RUNNER_MEMORY=4G
 ```bash
 podman run -d \
   --name github-runner \
-  -e GITHUB_REPO_URL=https://github.com/YOUR-ORG/YOUR-REPO \
-  -e GITHUB_TOKEN=YOUR_TOKEN \
+  -e GITHUB_ORG=your-organization \
+  -e GITHUB_TOKEN=your_token \
   -e RUNNER_NAME=runner-1 \
-  --volume /var/run/podman/podman.sock:/var/run/docker.sock \
-  github-actions-runner:latest
+  --volume /run/user/984/podman/podman.sock:/var/run/docker.sock:ro \
+  salexson/github-action-runner:latest
 ```
 
 ### With Systemd Service (Production)
@@ -144,7 +160,7 @@ sudo cp config/github-actions-runner-podman.service \
   /etc/systemd/system/github-actions-runner.service
 
 # Create environment file
-sudo cp config/runner.env.example /home/gha/.runner.env
+sudo cp config/env.example /home/gha/.runner.env
 sudo chown gha:gha /home/gha/.runner.env
 chmod 600 /home/gha/.runner.env
 
@@ -186,7 +202,7 @@ cp config/env.example .env
 # RUNNER_WORK_DIR=./_work
 
 # Deploy
-docker-compose up -d runner
+podman-compose up -d runner
 ```
 
 See [doc/STORAGE-SETUP.md](doc/STORAGE-SETUP.md) for detailed storage management.
@@ -195,17 +211,18 @@ See [doc/STORAGE-SETUP.md](doc/STORAGE-SETUP.md) for detailed storage management
 
 The runner image includes:
 
-- **Runtime**: UBI 8 Minimal base, bash shell
+- **Runtime**: Ubuntu 22.04 LTS base, bash shell, locales support
 - **VCS**: Git, Git LFS
 - **Containers**: Podman, podman-docker (docker compatibility), Buildah, Skopeo
-- **CLI Tools**: curl, wget, jq, unzip, sshpass, rsync, vim
+- **CLI Tools**: curl, wget, jq, unzip, sshpass, rsync, vim-tiny, find, ps/pgrep
 - **Build Tools**: Make, gcc, g++, pkg-config
 - **Languages**: 
-  - Python 3 + pip + devel
+  - Python 3 + pip + venv
   - Node.js + npm
   - Go (golang)
+  - Ansible
 - **Infrastructure**: SSH server and client
-- **System**: sudo, dbus, systemd user services
+- **System**: sudo, dbus, hostname, findutils (find), procps (ps/pgrep)
 
 ## Security Considerations
 
@@ -234,7 +251,7 @@ The runner image includes:
 ./scripts/update-runner.sh
 
 # Redeploy containers
-podman pull github-actions-runner:latest
+podman pull salexson/github-action-runner:latest
 podman container rm -f github-runner
 ./scripts/deploy-runner.sh
 ```
@@ -242,8 +259,8 @@ podman container rm -f github-runner
 ### Viewing Logs
 
 ```bash
-# Docker Compose
-docker-compose logs -f runner
+# Podman Compose
+podman-compose logs -f
 
 # Systemd
 journalctl -u github-actions-runner -f
@@ -260,7 +277,7 @@ podman stop github-runner
 podman rm github-runner
 
 # Remove image
-podman rmi github-actions-runner:latest
+podman rmi salexson/github-action-runner:latest
 ```
 
 ## Documentation
@@ -290,7 +307,7 @@ podman rmi github-actions-runner:latest
 ### Container won't start
 
 - Check: `podman logs github-runner`
-- Verify: `docker-compose` environment variables are set
+- Verify: `podman-compose` environment variables are set
 - See: [doc/TROUBLESHOOTING.md](doc/TROUBLESHOOTING.md)
 
 ### For all other issues
@@ -304,7 +321,7 @@ podman rmi github-actions-runner:latest
 Edit `Dockerfile` to use different base image:
 
 ```dockerfile
-FROM rocky:9
+FROM ubuntu:24.04
 # or
 FROM debian:bookworm
 ```
@@ -331,7 +348,7 @@ See `doc/NETWORKING.md` for advanced networking setups including:
 ```bash
 podman buildx build \
   --platform linux/amd64,linux/arm64 \
-  -t github-actions-runner:latest \
+  -t salexson/github-action-runner:latest \
   .
 ```
 
@@ -359,4 +376,3 @@ For issues or questions:
 - [389DS LDAP Server](../389ds-ldap-server)
 - [HAProxy + Podman](../haproxy-podman)
 - [LDAP Web Manager](../ldap-web-manager)
-
