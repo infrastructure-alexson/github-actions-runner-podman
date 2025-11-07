@@ -1,16 +1,17 @@
 # GitHub Actions Runner - Podman Support
-# Enterprise-grade, minimal container image for self-hosted GitHub Actions runners
-# Based on Red Hat Universal Base Image 8 Minimal (UBI 8)
+# Enterprise-grade container image for self-hosted GitHub Actions runners
+# Based on Red Hat Universal Base Image 8 (UBI 8) - Full Edition
 # 
 # Includes: Podman (with docker compatibility), Buildah, Skopeo for container image building
 # Uses UBI 8 for broader CPU compatibility (includes older x86-64 processors)
+# Uses full UBI 8 (not minimal) for better compatibility with GitHub Actions runner
 
-FROM registry.access.redhat.com/ubi8/ubi-minimal:latest
+FROM registry.access.redhat.com/ubi8/ubi:latest
 
 LABEL maintainer="Infrastructure Team"
-LABEL description="GitHub Actions self-hosted runner with Podman support (docker compatible) - UBI 8 based"
-LABEL version="1.2.1"
-LABEL base_image="ubi8"
+LABEL description="GitHub Actions self-hosted runner with Podman support (docker compatible) - UBI 8 full image"
+LABEL version="1.3.0"
+LABEL base_image="ubi8-full"
 LABEL container_tools="podman,podman-docker,buildah,skopeo"
 
 # Set environment variables
@@ -20,9 +21,9 @@ ENV RUNNER_ALLOW_RUNASROOT=false \
     RUNNER_HOME=/home/runner \
     PATH="/opt/runner/bin:${PATH}"
 
-# Install base packages and dependencies using microdnf (UBI minimal)
+# Install base packages and dependencies using yum (UBI 8 full)
 # UBI 8 is x86-64-v1 compatible - includes baseline 64-bit x86 instructions
-RUN microdnf install -y \
+RUN yum install -y \
     # Essential tools
     curl \
     wget \
@@ -70,10 +71,10 @@ RUN microdnf install -y \
     sshpass \
     rsync \
     vim-minimal \
-    # Cleanup
-    && microdnf clean all \
-    && rm -rf /var/cache/dnf/* \
-    && rm -rf /tmp/*
+            # Cleanup
+            && yum clean all \
+            && rm -rf /var/cache/yum/* \
+            && rm -rf /tmp/*
 
 # Create runner user with home directory
 RUN groupadd -g ${RUNNER_GID} runner && \
