@@ -47,6 +47,12 @@ services:
     container_name: github-runner
     hostname: github-runner
     
+    # SELinux: Disable label checking for this container only
+    # This allows the runner to work with SELinux enforcing on the host
+    # See: doc/HOST-SELINUX-FIX.md for details
+    security_opt:
+      - label=disable
+    
     # Restart policy
     restart: unless-stopped
     restart_policy:

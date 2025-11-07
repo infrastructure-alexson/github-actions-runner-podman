@@ -27,94 +27,85 @@ Usually: **SELinux in enforcing mode**
 
 ---
 
-## Quick Fixes (Try in Order)
+## Recommended Fix: SELinux Label Disable (Container-Only)
 
-### **Fix 1: Check SELinux Status**
+⭐ **This is the BEST approach** - Only disables SELinux for this container, keeps system protection intact.
 
-```bash
-getenforce
-```
+### **Step 1: Update docker-compose.yml**
 
-**If output is `Enforcing`**: SELinux is blocking it (most likely)
-
-**If output is `Permissive`**: Something else is wrong
-
-**If output is `Disabled`**: SELinux isn't the issue
-
-### **Fix 2: Temporarily Disable SELinux**
-
-```bash
-# Disable SELinux immediately (until reboot)
-sudo setenforce 0
-
-# Verify
-getenforce
-# Should now show: Permissive
-```
-
-### **Fix 3: Test Container**
-
-```bash
-# Test if container works now
-podman run --rm salexson/github-action-runner:latest /bin/bash -c "echo works"
-
-# Should output: works
-
-# If it works: SELinux was definitely the issue
-# If still fails: skip to Fix 5
-```
-
-### **Fix 4: Make SELinux Change Permanent**
-
-**Edit `/etc/selinux/config` as root:**
-
-```bash
-sudo vi /etc/selinux/config
-```
-
-**Find this line:**
-```
-SELINUX=enforcing
-```
-
-**Change to:**
-```
-SELINUX=permissive
-```
-
-**Save and reboot:**
-```bash
-sudo reboot
-```
-
-After reboot, SELinux will stay in permissive mode.
-
-### **Fix 5: Alternative - Disable Only for This Container**
-
-If you don't want to change system-wide SELinux:
-
-**Update `/opt/gha/docker-compose.yml`:**
+Edit `/opt/gha/docker-compose.yml` and add `security_opt`:
 
 ```yaml
 services:
   github-runner:
     image: salexson/github-action-runner:latest
     container_name: github-runner
+    hostname: github-runner
     
-    # Add these lines:
+    # Add these lines (after hostname, before restart_policy):
     security_opt:
       - label=disable
     
-    # ... rest of config stays same
+    # ... rest of config stays the same
 ```
 
-**Then restart:**
+### **Step 2: Restart Container**
 
 ```bash
 cd /opt/gha
 docker-compose down
 docker-compose up -d
 ```
+
+### **Step 3: Verify**
+
+```bash
+podman logs github-runner
+
+# Should show:
+# [INFO] GitHub Actions Runner Entrypoint
+# [INFO] Runner registered successfully
+```
+
+---
+
+## Alternative: System-Wide SELinux Changes (Not Recommended)
+
+If you need to disable SELinux system-wide (not recommended):
+
+### **Temporary Fix (Until Reboot)**
+
+```bash
+# Check current status
+getenforce
+
+# If "Enforcing", temporarily disable
+sudo setenforce 0
+
+# Verify
+getenforce
+# Should show: Permissive
+```
+
+### **Permanent Fix (Requires Reboot)**
+
+```bash
+# Edit SELinux config
+sudo vi /etc/selinux/config
+
+# Find this line:
+# SELINUX=enforcing
+
+# Change to:
+# SELINUX=permissive
+
+# Save: Esc, :wq, Enter
+
+# Reboot to apply
+sudo reboot
+```
+
+⚠️ **Note**: This disables SELinux for the **entire system**, affecting all containers and services. Use the docker-compose fix above instead.
 
 ---
 
@@ -245,37 +236,55 @@ If missing flags, your CPU is too old. But this is **unlikely** since the image 
 
 ## Verification Checklist
 
-- [ ] Ran `getenforce` and saw the mode
-- [ ] If ENFORCING: ran `sudo setenforce 0`
-- [ ] Tested container: `podman run --rm salexson/github-action-runner:latest /bin/bash -c "echo test"`
-- [ ] Container bash worked (no libtinfo error)
-- [ ] Made SELinux change permanent OR updated docker-compose.yml
-- [ ] Started org runner: `docker-compose up -d`
-- [ ] Verified container running: `podman ps`
-- [ ] Checked GitHub org runners page
-- [ ] Runner appears and shows "Online"
+**Recommended Approach (Container-Only):**
+- [ ] Edited `/opt/gha/docker-compose.yml`
+- [ ] Added `security_opt: - label=disable` under the github-runner service
+- [ ] Ran: `docker-compose down && docker-compose up -d`
+- [ ] Verified logs: `podman logs github-runner`
+- [ ] Checked container status: `podman ps` (should show "Up" and "healthy")
+- [ ] Runner appears on GitHub org runners page
+- [ ] Runner shows "Online" status
+
+**Alternative (System-Wide - Not Recommended):**
+- [ ] Ran `getenforce` and checked mode
+- [ ] If ENFORCING: ran `sudo setenforce 0` (temporary)
+- [ ] Tested container works
+- [ ] Edited `/etc/selinux/config` (permanent)
+- [ ] Rebooted system
+- [ ] Verified SELinux stayed in permissive mode
 
 ---
 
-## Your Immediate Action
+## Your Immediate Action (Recommended)
 
 ```bash
-# 1. Check SELinux right now
-getenforce
+# 1. Edit docker-compose.yml
+cd /opt/gha
+nano docker-compose.yml
 
-# 2. If ENFORCING, fix it
-sudo setenforce 0
+# 2. Find the github-runner service section
+# 3. Add these lines after "hostname: github-runner":
+#    security_opt:
+#      - label=disable
 
-# 3. Test
-podman run --rm salexson/github-action-runner:latest /bin/bash -c "echo test"
+# 4. Save and exit (Ctrl+X, Y, Enter)
 
-# If that works, SELinux was the issue!
-# Then make permanent (reboot or edit /etc/selinux/config)
+# 5. Restart container
+docker-compose down
+docker-compose up -d
+
+# 6. Verify
+podman logs github-runner
+# Should show: [INFO] Runner registered successfully
 ```
 
 ---
 
-**Summary**: This is a **host system issue** (SELinux), not an image issue. The fix is system-level, not container-level.
+**Summary**: 
+- ✅ **This is a host system issue** (SELinux), not an image issue
+- ✅ **Best fix**: Add `security_opt: label=disable` to docker-compose.yml (container-only)
+- ✅ **Why**: Keeps SELinux enabled for other system services, only disables for this container
+- ❌ **Don't disable SELinux system-wide** - that weakens security for everything
 
-The image is correct. The host needs configuration.
+The image is correct. The docker-compose.yml just needs one line!
 
