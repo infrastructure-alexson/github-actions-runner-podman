@@ -1,0 +1,14 @@
+name: Test Self-Hosted Runner
+
+on: [push]
+
+jobs:
+  test:
+    runs-on: [self-hosted, linux]
+    steps:
+      - name: Hello from runner
+        run: |
+          echo "✓ Runner is working!"
+          echo "Hostname: $(hostname)"
+          echo "User: $(whoami)"
+          podman --version
