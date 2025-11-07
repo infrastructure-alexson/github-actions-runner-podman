@@ -59,6 +59,10 @@ RUN microdnf install -y \
     # System utilities
     sudo \
     dbus \
+    # .NET Core dependencies (GitHub Actions Runner requirements)
+    libicu \
+    openssl \
+    krb5-libs \
     # Additional utils
     sshpass \
     rsync \
@@ -91,7 +95,9 @@ RUN mkdir -p /opt/runner && \
     curl -L -O "https://github.com/actions/runner/releases/download/v${RUNNER_VERSION}/actions-runner-linux-${ARCH_SUFFIX}-${RUNNER_VERSION}.tar.gz" && \
     tar xzf "actions-runner-linux-${ARCH_SUFFIX}-${RUNNER_VERSION}.tar.gz" && \
     rm "actions-runner-linux-${ARCH_SUFFIX}-${RUNNER_VERSION}.tar.gz" && \
-    ./bin/installdependencies.sh && \
+    # Note: Skip installdependencies.sh as UBI Minimal uses microdnf not yum
+    # All required .NET Core dependencies were already installed above
+    echo "Runner binaries extracted. .NET Core dependencies pre-installed via microdnf." && \
     chown -R runner:runner /opt/runner
 
 # Copy entrypoint script
