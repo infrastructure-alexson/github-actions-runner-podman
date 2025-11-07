@@ -63,8 +63,8 @@ services:
               # For org runner:
               GITHUB_ORG: ${GITHUB_ORG:-}
               
-              # Map RUNNER_TOKEN from .env to GITHUB_TOKEN expected by entrypoint
-              GITHUB_TOKEN: ${RUNNER_TOKEN}
+              # GitHub token from .env (matches env.example)
+              GITHUB_TOKEN: ${GITHUB_TOKEN}
               RUNNER_NAME: ${RUNNER_NAME:-runner-01}
               RUNNER_LABELS: ${RUNNER_LABELS:-podman,linux,amd64}
       
