@@ -1,16 +1,16 @@
-# GitHub Actions Runner - Docker & Podman Support
+# GitHub Actions Runner - Podman Support
 # Enterprise-grade, minimal container image for self-hosted GitHub Actions runners
 # Based on Red Hat Universal Base Image 9 Minimal (UBI 9)
 # 
-# Includes: Docker, Podman, Buildah, Skopeo for container image building
+# Includes: Podman (with docker compatibility), Buildah, Skopeo for container image building
 
 FROM registry.access.redhat.com/ubi9/ubi-minimal:latest
 
 LABEL maintainer="Infrastructure Team"
-LABEL description="GitHub Actions self-hosted runner with Docker & Podman support - UBI 9 based"
+LABEL description="GitHub Actions self-hosted runner with Podman support (docker compatible) - UBI 9 based"
 LABEL version="1.1.0"
 LABEL base_image="ubi9"
-LABEL container_tools="docker,podman,buildah,skopeo"
+LABEL container_tools="podman,podman-docker,buildah,skopeo"
 
 # Set environment variables
 ENV RUNNER_ALLOW_RUNASROOT=false \
@@ -39,13 +39,12 @@ RUN microdnf install -y \
     openssh-clients \
     openssh-server \
     openssh-keygen \
-    # Container tools (Podman & Docker)
+    # Container tools (Podman)
     podman \
     podman-plugins \
+    podman-docker \
     skopeo \
     buildah \
-    docker \
-    docker-compose \
     # Build essentials
     gcc \
     gcc-c++ \
@@ -74,16 +73,12 @@ RUN microdnf install -y \
 RUN groupadd -g ${RUNNER_GID} runner && \
     useradd -m -u ${RUNNER_UID} -g ${RUNNER_GID} -s /bin/bash runner && \
     usermod -aG wheel runner && \
-    # Add runner to docker group for Docker socket access
-    getent group docker || groupadd -g 998 docker && \
-    usermod -aG docker runner && \
-    # Add runner to podman group if it exists
+    # Add runner to podman group for rootless container support
     getent group podman >/dev/null && usermod -aG podman runner || true && \
     echo "runner ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers.d/runner && \
     chmod 0440 /etc/sudoers.d/runner && \
     # Setup container config directories
     mkdir -p ${RUNNER_HOME}/.config/containers && \
-    mkdir -p ${RUNNER_HOME}/.docker && \
     mkdir -p ${RUNNER_HOME}/.kube && \
     chown -R runner:runner ${RUNNER_HOME}
 
