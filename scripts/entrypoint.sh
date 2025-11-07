@@ -58,6 +58,17 @@ configure_runner() {
     
     cd "${RUNNER_DIR}"
     
+    # Ensure .runner directory exists with correct permissions
+    # This is critical for mounted volumes where permissions might be wrong
+    if [[ ! -d "${RUNNER_HOME}/.runner" ]]; then
+        mkdir -p "${RUNNER_HOME}/.runner"
+    fi
+    
+    # Fix permissions on .runner directory
+    # Ensure runner user (not root) owns it
+    chown -R runner:runner "${RUNNER_HOME}/.runner" 2>/dev/null || true
+    chmod 700 "${RUNNER_HOME}/.runner" 2>/dev/null || true
+    
     # Build registration URL
     local register_url="${GITHUB_REPO_URL:-https://github.com/$GITHUB_ORG}"
     
@@ -93,6 +104,15 @@ configure_runner() {
     log_info "Registering runner with GitHub..."
     if ./config.sh "${config_args[@]}"; then
         log_info "Runner registered successfully"
+        
+        # Fix permissions again after config.sh (it might create files as root)
+        chown -R runner:runner "${RUNNER_HOME}/.runner" 2>/dev/null || true
+        chmod 700 "${RUNNER_HOME}/.runner" 2>/dev/null || true
+        
+        # Ensure all files in .runner are readable by runner user
+        find "${RUNNER_HOME}/.runner" -type f -exec chmod 600 {} \; 2>/dev/null || true
+        find "${RUNNER_HOME}/.runner" -type d -exec chmod 700 {} \; 2>/dev/null || true
+        
         touch "${RUNNER_HOME}/.configured"
     else
         log_error "Failed to register runner"
