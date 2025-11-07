@@ -58,6 +58,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     # Node.js for common workflows
     nodejs \
     npm \
+    # Go for common workflows
+    golang-go \
+    # Ansible for infrastructure automation
+    ansible \
     # System utilities
     sudo \
     dbus \
