@@ -86,12 +86,12 @@ Go to: `https://github.com/YOUR-ORG/YOUR-REPO/settings/actions/runners`
 ### 2. Run Container
 ```bash
 export GITHUB_REPOSITORY="owner/repo"
-export RUNNER_TOKEN="ghs_xxxxx"
+export GITHUB_TOKEN="ghs_xxxxx"
 
 podman run -d \
   --name github-runner \
   -e GITHUB_REPOSITORY="$GITHUB_REPOSITORY" \
-  -e RUNNER_TOKEN="$RUNNER_TOKEN" \
+  -e GITHUB_TOKEN="$GITHUB_TOKEN" \
   -e RUNNER_NAME="my-runner" \
   -e RUNNER_LABELS="podman,linux,amd64" \
   -v /var/run/podman/podman.sock:/var/run/podman/podman.sock \

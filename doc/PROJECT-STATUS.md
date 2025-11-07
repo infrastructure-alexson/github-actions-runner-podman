@@ -118,7 +118,7 @@ Complete, production-ready GitHub Actions self-hosted runner container implement
 podman run -d \
   --name github-runner \
   -e GITHUB_REPOSITORY="owner/repo" \
-  -e RUNNER_TOKEN="ghs_xxxxx" \
+  -e GITHUB_TOKEN="ghs_xxxxx" \
   -e RUNNER_NAME="my-runner" \
   -e RUNNER_LABELS="podman,linux,amd64" \
   -v /var/run/podman/podman.sock:/var/run/podman/podman.sock \

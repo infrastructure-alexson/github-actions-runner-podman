@@ -64,7 +64,7 @@ podman build -t github-action-runner:latest .
 podman run -d \
   --name github-runner \
   -e GITHUB_REPOSITORY="organization-name" \
-  -e RUNNER_TOKEN="your_token_here" \
+  -e GITHUB_TOKEN="your_token_here" \
   -e RUNNER_NAME="org-runner-01" \
   -e RUNNER_LABELS="organization,podman,linux" \
   -v /var/run/podman/podman.sock:/var/run/podman/podman.sock \
@@ -112,7 +112,7 @@ Create `.env` file:
 ```bash
 # Organization-level runner (all repos can use)
 GITHUB_REPOSITORY=infrastructure-alexson
-RUNNER_TOKEN=ghs_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+GITHUB_TOKEN=ghs_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 RUNNER_NAME=org-runner-01
 RUNNER_LABELS=organization,podman,linux,amd64
 WORK_DIR=/opt/runner-work

@@ -15,7 +15,7 @@ version: '3.9'
 #
 # Environment (Required):
 #   - GITHUB_REPOSITORY: Repository (e.g., owner/repo)
-#   - RUNNER_TOKEN: Registration token from GitHub
+#   - GITHUB_TOKEN: Registration token from GitHub
 #   - RUNNER_NAME: Runner display name (default: runner-01)
 #   - RUNNER_LABELS: Comma-separated labels (default: podman,linux,amd64)
 #
@@ -26,7 +26,7 @@ version: '3.9'
 #
 # Example - System Podman:
 #   export GITHUB_REPOSITORY=owner/repo
-#   export RUNNER_TOKEN=ghs_xxxxx
+#   export GITHUB_TOKEN=ghs_xxxxx
 #   export RUNNER_NAME=runner-01
 #   export RUNNER_LABELS=podman,linux,amd64
 #   docker-compose up -d
@@ -34,7 +34,7 @@ version: '3.9'
 # Example - Rootless Podman as 'gha' user:
 #   export DOCKER_HOST=unix:///run/user/1000/podman/podman.sock
 #   export GITHUB_REPOSITORY=owner/repo
-#   export RUNNER_TOKEN=ghs_xxxxx
+#   export GITHUB_TOKEN=ghs_xxxxx
 #   docker-compose up -d
 #
 # For rootless Podman troubleshooting:

@@ -140,7 +140,7 @@ cd /opt/gha
 
 # Set environment (for org runner)
 export GITHUB_ORG=my-org
-export RUNNER_TOKEN=ghp_xxxx
+export GITHUB_TOKEN=ghp_xxxx
 export RUNNER_NAME=runner-01
 
 # Start
@@ -210,7 +210,7 @@ podman inspect salexson/github-action-runner:latest | grep -i os
 
 ```bash
 # Run with bash -x to see every command
-podman run -e GITHUB_ORG=test -e RUNNER_TOKEN=test \
+podman run -e GITHUB_ORG=test -e GITHUB_TOKEN=test \
   salexson/github-action-runner:latest \
   bash -x /opt/runner/entrypoint.sh 2>&1 | head -50
 ```
@@ -252,7 +252,7 @@ cd /opt/gha
 # 4. Create .env file
 cat > .env <<'EOF'
 GITHUB_ORG=my-org
-RUNNER_TOKEN=ghp_xxxx
+GITHUB_TOKEN=ghp_xxxx
 RUNNER_NAME=runner-01
 RUNNER_LABELS=podman,linux,docker,x86_64
 RUNNER_EPHEMERAL=false
@@ -368,7 +368,7 @@ The Dockerfile is correct. If you build from it, the image should work.
    ```bash
    cd /opt/gha
    export GITHUB_ORG=my-org
-   export RUNNER_TOKEN=ghp_xxxx
+   export GITHUB_TOKEN=ghp_xxxx
    docker-compose up -d
    ```
 

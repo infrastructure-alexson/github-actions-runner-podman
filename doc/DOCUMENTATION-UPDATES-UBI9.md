@@ -78,7 +78,7 @@ RUNNER_NAME=podman-runner-01
 ### New Format (UBI 9)
 ```bash
 GITHUB_REPOSITORY=infrastructure-alexson
-RUNNER_TOKEN=ghs_xxxx
+GITHUB_TOKEN=ghs_xxxx
 RUNNER_NAME=org-runner-01
 RUNNER_LABELS=organization,podman,linux,amd64
 WORK_DIR=/opt/runner-work
@@ -87,7 +87,7 @@ CONFIG_DIR=/opt/runner-config
 
 ### Key Differences
 - ✅ GITHUB_REPOSITORY instead of GITHUB_REPO_URL
-- ✅ RUNNER_TOKEN instead of GITHUB_TOKEN (organization secret)
+- ✅ GITHUB_TOKEN instead of GITHUB_TOKEN (organization secret)
 - ✅ Added RUNNER_LABELS for better targeting
 - ✅ Separate WORK_DIR and CONFIG_DIR
 - ✅ Added resource limits (RUNNER_CPUS, RUNNER_MEMORY)

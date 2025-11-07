@@ -46,7 +46,7 @@
 export GITHUB_ORG=my-org
 
 # Your organization token
-export RUNNER_TOKEN=ghp_xxxx
+export GITHUB_TOKEN=ghp_xxxx
 
 # Runner configuration
 export RUNNER_NAME=runner-01
@@ -58,7 +58,7 @@ export RUNNER_LABELS=podman,linux,docker,x86_64
 ```bash
 # Check they're set
 echo "GITHUB_ORG=$GITHUB_ORG"
-echo "RUNNER_TOKEN=$RUNNER_TOKEN"
+echo "GITHUB_TOKEN=$GITHUB_TOKEN"
 echo "RUNNER_NAME=$RUNNER_NAME"
 
 # Both should have values, NOT be empty
@@ -100,7 +100,7 @@ GITHUB_ORG=my-org
 # Organization-level Personal Access Token
 # Generate at: https://github.com/settings/tokens
 # Scopes: admin:org_self_hosted_runners, repo, workflow
-RUNNER_TOKEN=ghp_xxxx_your_token_here
+GITHUB_TOKEN=ghp_xxxx_your_token_here
 
 # ==============================================================================
 # Runner Configuration
@@ -156,7 +156,7 @@ CACHE_DIR=./runner-cache
 
 # 2. Set environment
 export GITHUB_ORG=my-org
-export RUNNER_TOKEN=ghp_xxxx
+export GITHUB_TOKEN=ghp_xxxx
 export RUNNER_NAME=runner-01
 export RUNNER_LABELS=podman,linux,docker,x86_64
 
@@ -277,7 +277,7 @@ jobs:
 # Regenerate with admin:org_self_hosted_runners scope
 
 # Verify token is set
-echo $RUNNER_TOKEN | head -c 20
+echo $GITHUB_TOKEN | head -c 20
 # Should show: ghp_xxxxxxxx
 ```
 
@@ -320,7 +320,7 @@ environment:
   # Organization runner (if GITHUB_REPOSITORY not set)
   GITHUB_ORG: ${GITHUB_ORG}
   
-  RUNNER_TOKEN: ${RUNNER_TOKEN}
+  GITHUB_TOKEN: ${GITHUB_TOKEN}
 ```
 
 The entrypoint script checks for either one (in that order).
@@ -336,7 +336,7 @@ The entrypoint script checks for either one (in that order).
 export GITHUB_ORG=my-org
 
 # Your organization token:
-export RUNNER_TOKEN=ghp_xxxx
+export GITHUB_TOKEN=ghp_xxxx
 ```
 
 ### Optional but Recommended
@@ -385,7 +385,7 @@ docker-compose -f docker-compose.yml -p runner02 up -d
 
 - [ ] Generated organization token with `admin:org_self_hosted_runners` scope
 - [ ] Set `GITHUB_ORG` environment variable
-- [ ] Set `RUNNER_TOKEN` environment variable
+- [ ] Set `GITHUB_TOKEN` environment variable
 - [ ] Set `RUNNER_NAME` environment variable
 - [ ] Podman socket running: `systemctl --user status podman.socket`
 - [ ] `DOCKER_HOST` set to user socket
@@ -400,7 +400,7 @@ docker-compose -f docker-compose.yml -p runner02 up -d
 ## Next Steps
 
 1. **Generate organization token** at https://github.com/settings/tokens
-2. **Create .env file** in `/opt/gha/.env` with `GITHUB_ORG` and `RUNNER_TOKEN`
+2. **Create .env file** in `/opt/gha/.env` with `GITHUB_ORG` and `GITHUB_TOKEN`
 3. **Start container** with `docker-compose up -d`
 4. **Verify in GitHub** at organization runners page
 5. **Use in workflows** by selecting `self-hosted` runner

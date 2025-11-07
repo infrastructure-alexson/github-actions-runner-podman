@@ -196,7 +196,7 @@ cd /opt/gha
 
 # 3. Set org environment
 export GITHUB_ORG=my-org
-export RUNNER_TOKEN=ghp_xxxx
+export GITHUB_TOKEN=ghp_xxxx
 export RUNNER_NAME=runner-01
 
 # 4. Start

@@ -8,12 +8,12 @@
 
 # 2. Run container
 export GITHUB_REPOSITORY="owner/repo"
-export RUNNER_TOKEN="ghs_xxxxx"
+export GITHUB_TOKEN="ghs_xxxxx"
 
 podman run -d \
   --name github-runner \
   -e GITHUB_REPOSITORY="$GITHUB_REPOSITORY" \
-  -e RUNNER_TOKEN="$RUNNER_TOKEN" \
+  -e GITHUB_TOKEN="$GITHUB_TOKEN" \
   -e RUNNER_NAME="my-runner" \
   -e RUNNER_LABELS="podman,linux,amd64" \
   -v /var/run/podman/podman.sock:/var/run/podman/podman.sock \
@@ -29,7 +29,7 @@ podman run -d \
 ### Run with Docker Compose
 ```bash
 export GITHUB_REPOSITORY="owner/repo"
-export RUNNER_TOKEN="ghs_xxxxx"
+export GITHUB_TOKEN="ghs_xxxxx"
 docker-compose up -d
 ```
 
@@ -61,7 +61,7 @@ docker-compose down
 
 ### Required
 - `GITHUB_REPOSITORY` - Repository (format: owner/repo)
-- `RUNNER_TOKEN` - Token from GitHub (valid 1 hour)
+- `GITHUB_TOKEN` - Token from GitHub (valid 1 hour)
 
 ### Optional
 - `RUNNER_NAME` - Display name (default: hostname)

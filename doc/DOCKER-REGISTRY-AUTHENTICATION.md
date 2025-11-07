@@ -212,7 +212,7 @@ podman build -t github-action-runner:latest .
 
 # 4. Set environment variables
 export GITHUB_REPOSITORY=owner/repo
-export RUNNER_TOKEN=ghs_xxxx
+export GITHUB_TOKEN=ghs_xxxx
 export RUNNER_NAME=runner-01
 export RUNNER_LABELS=podman,linux,docker
 
@@ -247,7 +247,7 @@ podman push docker.io/salexson/github-action-runner:latest
 
 # 4. Set environment variables
 export GITHUB_REPOSITORY=owner/repo
-export RUNNER_TOKEN=ghs_xxxx
+export GITHUB_TOKEN=ghs_xxxx
 
 # 5. Start services (will pull from Docker Hub)
 docker-compose up -d
@@ -360,7 +360,7 @@ podman login docker.io
 ```bash
 # GitHub configuration
 GITHUB_REPOSITORY=owner/repo
-RUNNER_TOKEN=ghs_xxxx
+GITHUB_TOKEN=ghs_xxxx
 RUNNER_NAME=runner-01
 RUNNER_LABELS=podman,linux,docker,x86_64
 
@@ -379,7 +379,7 @@ CONFIG_DIR=./runner-config
 
 ```bash
 export GITHUB_REPOSITORY=owner/repo
-export RUNNER_TOKEN=ghs_xxxx
+export GITHUB_TOKEN=ghs_xxxx
 export RUNNER_NAME=runner-01
 docker-compose up -d
 ```
@@ -389,7 +389,7 @@ docker-compose up -d
 ```bash
 docker-compose up -d \
   -e GITHUB_REPOSITORY=owner/repo \
-  -e RUNNER_TOKEN=ghs_xxxx
+  -e GITHUB_TOKEN=ghs_xxxx
 ```
 
 ---
@@ -413,7 +413,7 @@ Before running `docker-compose up -d`:
 - [ ] Environment variables are set
   ```bash
   echo $GITHUB_REPOSITORY
-  echo $RUNNER_TOKEN
+  echo $GITHUB_TOKEN
   ```
 
 - [ ] Directories are writable

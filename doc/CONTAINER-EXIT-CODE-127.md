@@ -26,7 +26,7 @@ Exit code 127 can be caused by:
 
 1. **Missing environment variables** (most likely)
    - `GITHUB_REPOSITORY` or `GITHUB_ORG` not set
-   - `RUNNER_TOKEN` not set
+   - `GITHUB_TOKEN` not set
    - Entrypoint script validation fails
 
 2. **Missing shell or executable**
@@ -101,7 +101,7 @@ export GITHUB_REPOSITORY=owner/repo
 export GITHUB_ORG=my-org
 
 # Required: GitHub personal access token
-export RUNNER_TOKEN=ghs_xxxx
+export GITHUB_TOKEN=ghs_xxxx
 ```
 
 **Update docker-compose.yml or use .env file:**
@@ -113,7 +113,7 @@ Create file: `/opt/gha/.env`
 ```bash
 # GitHub Configuration (Required)
 GITHUB_REPOSITORY=owner/repo
-RUNNER_TOKEN=ghs_xxxx
+GITHUB_TOKEN=ghs_xxxx
 
 # Runner Configuration (Optional)
 RUNNER_NAME=runner-01
@@ -135,7 +135,7 @@ docker-compose up -d
 
 ```bash
 export GITHUB_REPOSITORY=owner/repo
-export RUNNER_TOKEN=ghs_xxxx
+export GITHUB_TOKEN=ghs_xxxx
 export RUNNER_NAME=runner-01
 
 docker-compose up -d
@@ -144,7 +144,7 @@ docker-compose up -d
 **Option C: Run with inline environment**
 
 ```bash
-GITHUB_REPOSITORY=owner/repo RUNNER_TOKEN=ghs_xxxx docker-compose up -d
+GITHUB_REPOSITORY=owner/repo GITHUB_TOKEN=ghs_xxxx docker-compose up -d
 ```
 
 ---
@@ -165,7 +165,7 @@ podman ps -a | grep github-runner
 
 # Try again with proper environment
 export GITHUB_REPOSITORY=owner/repo
-export RUNNER_TOKEN=ghs_xxxx
+export GITHUB_TOKEN=ghs_xxxx
 docker-compose up -d
 
 # Check status
@@ -209,7 +209,7 @@ podman logs --tail 20 github-runner
    ↓
 2. Validate environment variables
    - Check GITHUB_REPOSITORY or GITHUB_ORG → MISSING!
-   - Check RUNNER_TOKEN → MISSING!
+   - Check GITHUB_TOKEN → MISSING!
    ↓
 3. Exit with error (exit code 1)
    ↓
@@ -221,7 +221,7 @@ podman logs --tail 20 github-runner
 Looking at your docker-compose output:
 
 ```
--e GITHUB_REPOSITORY= -e RUNNER_TOKEN=
+-e GITHUB_REPOSITORY= -e GITHUB_TOKEN=
 ```
 
 Both are **empty**! The entrypoint script cannot proceed.
@@ -243,7 +243,7 @@ docker-compose down
 ```bash
 # Required
 GITHUB_REPOSITORY=owner/repo
-RUNNER_TOKEN=ghs_xxxx
+GITHUB_TOKEN=ghs_xxxx
 
 # Runner config
 RUNNER_NAME=runner-01
@@ -296,7 +296,7 @@ Or simpler:
 
 ```bash
 export GITHUB_REPOSITORY=owner/repo
-export RUNNER_TOKEN=ghs_xxxx
+export GITHUB_TOKEN=ghs_xxxx
 export RUNNER_NAME=runner-01
 
 docker-compose up -d
@@ -333,7 +333,7 @@ GITHUB_REPOSITORY=my-org/my-repo
 # GitHub Personal Access Token (REQUIRED - change this!)
 # Generate at: https://github.com/settings/tokens
 # Permissions: repo (full), workflow, admin:repo_hook
-RUNNER_TOKEN=ghs_xxxx_your_token_here
+GITHUB_TOKEN=ghs_xxxx_your_token_here
 
 # ==============================================================================
 # Runner Configuration (Optional)
@@ -391,7 +391,7 @@ Before running docker-compose:
 ```bash
 # Verify variables are set
 echo "GITHUB_REPOSITORY=$GITHUB_REPOSITORY"
-echo "RUNNER_TOKEN=$RUNNER_TOKEN"
+echo "GITHUB_TOKEN=$GITHUB_TOKEN"
 echo "RUNNER_NAME=$RUNNER_NAME"
 
 # All should have values, not be empty
@@ -401,7 +401,7 @@ If empty, they're not exported. Fix with:
 
 ```bash
 export GITHUB_REPOSITORY=owner/repo
-export RUNNER_TOKEN=ghs_xxxx
+export GITHUB_TOKEN=ghs_xxxx
 echo $GITHUB_REPOSITORY  # Should show value now
 ```
 
@@ -455,7 +455,7 @@ which bash
    - ✅ `workflow`
    - ✅ `admin:repo_hook` (if organization)
 5. Copy the token (shown only once!)
-6. Set: `export RUNNER_TOKEN=ghp_...`
+6. Set: `export GITHUB_TOKEN=ghp_...`
 
 ---
 
@@ -470,7 +470,7 @@ podman inspect github-runner | grep -A5 '"Cmd"'
 # Run manually to see what happens
 podman run -it --rm \
   -e GITHUB_REPOSITORY=test/test \
-  -e RUNNER_TOKEN=test \
+  -e GITHUB_TOKEN=test \
   docker.io/salexson/github-action-runner:latest
 ```
 
@@ -514,7 +514,7 @@ When working correctly, logs should show:
 
 ## Next Steps
 
-1. **Set GITHUB_REPOSITORY and RUNNER_TOKEN** (required!)
+1. **Set GITHUB_REPOSITORY and GITHUB_TOKEN** (required!)
 2. **Create .env file** or export environment variables
 3. **Stop current container**: `docker-compose down`
 4. **Start with environment**: `docker-compose up -d`

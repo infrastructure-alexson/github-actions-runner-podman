@@ -36,11 +36,11 @@ if [[ "$EUID" == "0" ]]; then
 fi
 
 # Check required environment variables
-if [[ -z "$GITHUB_REPOSITORY" ]] || [[ -z "$RUNNER_TOKEN" ]]; then
+if [[ -z "$GITHUB_REPOSITORY" ]] || [[ -z "$GITHUB_TOKEN" ]]; then
     print_error "Required environment variables not set"
     print_info "Required variables:"
     echo "  - GITHUB_REPOSITORY: Repository URL (e.g., owner/repo)"
-    echo "  - RUNNER_TOKEN: GitHub runner registration token"
+    echo "  - GITHUB_TOKEN: GitHub runner registration token"
     echo ""
     print_info "Optional variables:"
     echo "  - RUNNER_NAME: Custom runner name (default: hostname)"
@@ -77,7 +77,7 @@ print_info "Configuring GitHub Action Runner..."
 
 CONFIGURE_ARGS=(
     "--url" "https://github.com/$GITHUB_REPOSITORY"
-    "--token" "$RUNNER_TOKEN"
+    "--token" "$GITHUB_TOKEN"
     "--name" "$RUNNER_NAME"
     "--labels" "$RUNNER_LABELS"
     "--work" "$RUNNER_WORKDIR"
@@ -107,7 +107,7 @@ trap_handler() {
     # Run removal script to unregister runner
     if [[ -f "./remove.sh" ]]; then
         print_info "Unregistering runner from GitHub..."
-        ./remove.sh --token "$RUNNER_TOKEN" || true
+        ./remove.sh --token "$GITHUB_TOKEN" || true
     fi
     
     print_info "Runner shutdown complete"

@@ -81,7 +81,7 @@ source ~/.bashrc
 ```bash
 # Set required environment variables
 export GITHUB_REPOSITORY=owner/repo
-export RUNNER_TOKEN=ghs_xxxx
+export GITHUB_TOKEN=ghs_xxxx
 
 # Run docker-compose
 docker-compose up -d
