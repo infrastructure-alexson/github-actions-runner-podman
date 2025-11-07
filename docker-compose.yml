@@ -75,10 +75,11 @@ services:
     # Volume mounts
     volumes:
       # Essential: Podman/Docker socket for container operations
-      # For rootless Podman: Use /run/user/$UID/podman/podman.sock
-      # For system Podman: Use /run/podman/podman.sock
-      # This example uses system Podman - for rootless, adjust path
-      - /run/podman/podman.sock:/var/run/docker.sock:ro
+      # For rootless Podman (gha user UID 984): Use user socket
+      # Set: export DOCKER_HOST=unix:///run/user/984/podman/podman.sock
+      # Or: export DOCKER_HOST=unix:///run/user/$(id -u)/podman/podman.sock
+      # Then docker-compose will use the socket specified in DOCKER_HOST
+      - /run/user/984/podman/podman.sock:/var/run/docker.sock:ro
       
       # Essential: Working directory for workflow files
       - ${WORK_DIR:-.}/runner-work:/home/runner/_work
