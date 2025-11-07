@@ -5,12 +5,12 @@
 # Includes: Podman (with docker compatibility), Buildah, Skopeo for container image building
 # Uses UBI 8 for broader CPU compatibility (includes older x86-64 processors)
 
-FROM centos:7
+FROM registry.access.redhat.com/ubi8/ubi-minimal:latest
 
 LABEL maintainer="Infrastructure Team"
-LABEL description="GitHub Actions self-hosted runner with Podman support - CentOS 7 for x86-64-v1 CPU compatibility"
-LABEL version="1.2.0"
-LABEL base_image="centos7"
+LABEL description="GitHub Actions self-hosted runner with Podman support (docker compatible) - UBI 8 based"
+LABEL version="1.2.1"
+LABEL base_image="ubi8"
 LABEL container_tools="podman,podman-docker,buildah,skopeo"
 
 # Set environment variables
@@ -20,12 +20,9 @@ ENV RUNNER_ALLOW_RUNASROOT=false \
     RUNNER_HOME=/home/runner \
     PATH="/opt/runner/bin:${PATH}"
 
-# Configure CentOS 7 vault repos (CentOS 7 reached EOL, repos moved to vault)
-RUN sed -i 's/^mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-*.repo && \
-    sed -i 's|^#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-*.repo
-
-# Install base packages and dependencies using yum (CentOS 7)
-RUN yum update -y && yum install -y \
+# Install base packages and dependencies using microdnf (UBI minimal)
+# UBI 8 is x86-64-v1 compatible - includes baseline 64-bit x86 instructions
+RUN microdnf install -y \
     # Essential tools
     curl \
     wget \
@@ -73,8 +70,8 @@ RUN yum update -y && yum install -y \
     rsync \
     vim-minimal \
     # Cleanup
-    && yum clean all \
-    && rm -rf /var/cache/yum/* \
+    && microdnf clean all \
+    && rm -rf /var/cache/dnf/* \
     && rm -rf /tmp/*
 
 # Create runner user with home directory
