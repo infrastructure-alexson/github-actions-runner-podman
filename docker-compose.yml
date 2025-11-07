@@ -56,17 +56,17 @@ services:
       window: 60s
     
     # Environment variables
-            environment:
-              # Required - choose one:
-              # For repo runner:
-              GITHUB_REPOSITORY: ${GITHUB_REPOSITORY:-}
-              # For org runner:
-              GITHUB_ORG: ${GITHUB_ORG:-}
-              
-              # GitHub token from .env (matches env.example)
-              GITHUB_TOKEN: ${GITHUB_TOKEN}
-              RUNNER_NAME: ${RUNNER_NAME:-runner-01}
-              RUNNER_LABELS: ${RUNNER_LABELS:-podman,linux,amd64}
+    environment:
+      # Required - choose one:
+      # For repo runner:
+      GITHUB_REPOSITORY: ${GITHUB_REPOSITORY:-}
+      # For org runner:
+      GITHUB_ORG: ${GITHUB_ORG:-}
+      
+      # GitHub token from .env (matches env.example)
+      GITHUB_TOKEN: ${GITHUB_TOKEN}
+      RUNNER_NAME: ${RUNNER_NAME:-runner-01}
+      RUNNER_LABELS: ${RUNNER_LABELS:-podman,linux,amd64}
       
       # Optional
       RUNNER_WORKDIR: ${RUNNER_WORKDIR:-/home/runner/_work}
