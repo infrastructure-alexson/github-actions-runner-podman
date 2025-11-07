@@ -1,15 +1,16 @@
 # GitHub Actions Runner - Podman Support
 # Enterprise-grade, minimal container image for self-hosted GitHub Actions runners
-# Based on Red Hat Universal Base Image 9 Minimal (UBI 9)
+# Based on Red Hat Universal Base Image 8 Minimal (UBI 8)
 # 
 # Includes: Podman (with docker compatibility), Buildah, Skopeo for container image building
+# Uses UBI 8 for broader CPU compatibility (includes older x86-64 processors)
 
-FROM registry.access.redhat.com/ubi9/ubi-minimal:latest
+FROM registry.access.redhat.com/ubi8/ubi-minimal:latest
 
 LABEL maintainer="Infrastructure Team"
-LABEL description="GitHub Actions self-hosted runner with Podman support (docker compatible) - UBI 9 based"
-LABEL version="1.1.0"
-LABEL base_image="ubi9"
+LABEL description="GitHub Actions self-hosted runner with Podman support (docker compatible) - UBI 8 based"
+LABEL version="1.1.1"
+LABEL base_image="ubi8"
 LABEL container_tools="podman,podman-docker,buildah,skopeo"
 
 # Set environment variables
