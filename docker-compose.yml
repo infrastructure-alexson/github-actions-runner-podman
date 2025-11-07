@@ -3,23 +3,42 @@ version: '3.9'
 ###############################################################################
 # GitHub Actions Self-Hosted Runner - Docker Compose Configuration
 # 
+# Prerequisites:
+#   - If running as non-root user (rootless Podman):
+#     See: doc/ROOTLESS-PODMAN-SETUP.md for configuration steps
+#   - User must have permission to write to home directory
+#   - Podman/Docker socket must be accessible
+#
 # Usage:
 #   docker-compose up -d
 #   docker-compose down
 #
-# Environment:
+# Environment (Required):
 #   - GITHUB_REPOSITORY: Repository (e.g., owner/repo)
 #   - RUNNER_TOKEN: Registration token from GitHub
-#   - RUNNER_NAME: Runner display name
-#   - RUNNER_LABELS: Comma-separated labels
-#   - RUNNER_WORKDIR: Working directory (default: /home/runner/_work)
+#   - RUNNER_NAME: Runner display name (default: runner-01)
+#   - RUNNER_LABELS: Comma-separated labels (default: podman,linux,amd64)
 #
-# Example:
+# Environment (Optional):
+#   - RUNNER_WORKDIR: Working directory (default: /home/runner/_work)
+#   - RUNNER_CPUS: CPU limit (default: 2)
+#   - RUNNER_MEMORY: Memory limit (default: 4G)
+#
+# Example - System Podman:
 #   export GITHUB_REPOSITORY=owner/repo
 #   export RUNNER_TOKEN=ghs_xxxxx
 #   export RUNNER_NAME=runner-01
 #   export RUNNER_LABELS=podman,linux,amd64
 #   docker-compose up -d
+#
+# Example - Rootless Podman as 'gha' user:
+#   export DOCKER_HOST=unix:///run/user/1000/podman/podman.sock
+#   export GITHUB_REPOSITORY=owner/repo
+#   export RUNNER_TOKEN=ghs_xxxxx
+#   docker-compose up -d
+#
+# For rootless Podman troubleshooting:
+#   See: doc/ROOTLESS-PODMAN-SETUP.md
 ###############################################################################
 
 services:
@@ -56,7 +75,10 @@ services:
     # Volume mounts
     volumes:
       # Essential: Podman/Docker socket for container operations
-      - /var/run/podman/podman.sock:/var/run/podman/podman.sock
+      # For rootless Podman: Use /run/user/$UID/podman/podman.sock
+      # For system Podman: Use /run/podman/podman.sock
+      # This example uses system Podman - for rootless, adjust path
+      - /run/podman/podman.sock:/var/run/docker.sock:ro
       
       # Essential: Working directory for workflow files
       - ${WORK_DIR:-.}/runner-work:/home/runner/_work
