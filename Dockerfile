@@ -32,14 +32,12 @@ RUN microdnf install -y \
     unzip \
     tar \
     gzip \
-    make \
     which \
     # Shell utilities
     bash \
     # VCS and utilities
     openssh-clients \
     openssh-server \
-    openssh-keygen \
     # Container tools (Podman)
     podman \
     podman-plugins \
