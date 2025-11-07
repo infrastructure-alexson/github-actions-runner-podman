@@ -1,20 +1,23 @@
 # GitHub Actions Runner - Podman with Docker Compatibility
 
-A production-ready, enterprise-grade containerized GitHub Actions self-hosted runner based on Red Hat UBI 9 Minimal with Podman and docker compatibility.
+A production-ready, enterprise-grade containerized GitHub Actions self-hosted runner based on Red Hat UBI 8 Minimal with Podman and docker compatibility.
 
-**Base Image**: `registry.access.redhat.com/ubi9/ubi-minimal:latest`  
+**Base Image**: `registry.access.redhat.com/ubi8/ubi-minimal:latest`  
 **Container Tool**: Podman (with podman-docker for docker compatibility)  
-**Image Size**: ~350MB (50% smaller than Ubuntu-based images)  
+**Image Size**: ~360MB (50% smaller than Ubuntu-based images)  
+**CPU Support**: x86-64-v1+ (broad processor compatibility - 2003+)  
 **Build Time**: 2-3 minutes (40% faster)  
 **Support**: 10-year enterprise support from Red Hat  
 
 ## Overview
 
-This project provides a minimal, secure, and optimized GitHub Actions self-hosted runner container image based on Red Hat's Universal Base Image 9 (UBI 9 Minimal) with **Podman as the primary container tool** and **podman-docker compatibility layer** for Docker command support.
+This project provides a minimal, secure, and optimized GitHub Actions self-hosted runner container image based on Red Hat's Universal Base Image 8 Minimal (UBI 8) with **Podman as the primary container tool** and **podman-docker compatibility layer** for Docker command support.
+
+UBI 8 was chosen for **broad CPU compatibility** (x86-64-v1+, 2003+) while maintaining enterprise-grade security and support.
 
 ## Features
 
-- ✅ **UBI 9 Minimal Base**: Enterprise-grade, Red Hat backed, minimal footprint
+- ✅ **UBI 8 Minimal Base**: Enterprise-grade, Red Hat backed, broad CPU compatibility
 - ✅ **Podman First**: Modern, secure, rootless-capable container runtime
 - ✅ **Docker Compatible**: `docker` commands work via podman-docker wrapper
 - ✅ **Self-Hosted Runner**: Full GitHub Actions runner support for CI/CD pipelines
@@ -29,6 +32,7 @@ This project provides a minimal, secure, and optimized GitHub Actions self-hoste
 ### Prerequisites
 
 - **Container Runtime**: Podman 4.0+ (Docker 20.10+ also supported via podman-docker compatibility)
+- **CPU**: x86-64 processor from 2003+ (x86-64-v1 baseline). See [CPU Compatibility](doc/CPU-COMPATIBILITY.md) for details
 - **GitHub Token**: Registration token from organization (expires in 1 hour)
 - **System**: Rocky Linux 8/9, RHEL 8/9, or compatible
 - **Storage**: 10GB+ available for image and working directory
@@ -43,7 +47,7 @@ This project provides a minimal, secure, and optimized GitHub Actions self-hoste
 cd github-actions-runner-podman
 ```
 
-2. **Build the image (UBI 9 Minimal + Podman):**
+2. **Build the image (UBI 8 Minimal + Podman):**
 
 ```bash
 # Build with Podman
