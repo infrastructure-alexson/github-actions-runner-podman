@@ -20,6 +20,10 @@ ENV RUNNER_ALLOW_RUNASROOT=false \
     RUNNER_HOME=/home/runner \
     PATH="/opt/runner/bin:${PATH}"
 
+# Configure CentOS 7 vault repos (CentOS 7 reached EOL, repos moved to vault)
+RUN sed -i 's/^mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-*.repo && \
+    sed -i 's|^#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-*.repo
+
 # Install base packages and dependencies using yum (CentOS 7)
 RUN yum update -y && yum install -y \
     # Essential tools
