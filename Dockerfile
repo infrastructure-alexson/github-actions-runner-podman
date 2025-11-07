@@ -5,12 +5,12 @@
 # Includes: Podman (with docker compatibility), Buildah, Skopeo for container image building
 # Uses UBI 8 for broader CPU compatibility (includes older x86-64 processors)
 
-FROM registry.access.redhat.com/ubi8/ubi-minimal:latest
+FROM centos:7
 
 LABEL maintainer="Infrastructure Team"
-LABEL description="GitHub Actions self-hosted runner with Podman support (docker compatible) - UBI 8 based"
-LABEL version="1.1.2"
-LABEL base_image="ubi8"
+LABEL description="GitHub Actions self-hosted runner with Podman support - CentOS 7 for x86-64-v1 CPU compatibility"
+LABEL version="1.2.0"
+LABEL base_image="centos7"
 LABEL container_tools="podman,podman-docker,buildah,skopeo"
 
 # Set environment variables
@@ -20,8 +20,8 @@ ENV RUNNER_ALLOW_RUNASROOT=false \
     RUNNER_HOME=/home/runner \
     PATH="/opt/runner/bin:${PATH}"
 
-# Install base packages and dependencies using microdnf (UBI minimal)
-RUN microdnf install -y \
+# Install base packages and dependencies using yum (CentOS 7)
+RUN yum update -y && yum install -y \
     # Essential tools
     curl \
     wget \
@@ -69,8 +69,8 @@ RUN microdnf install -y \
     rsync \
     vim-minimal \
     # Cleanup
-    && microdnf clean all \
-    && rm -rf /var/cache/dnf/* \
+    && yum clean all \
+    && rm -rf /var/cache/yum/* \
     && rm -rf /tmp/*
 
 # Create runner user with home directory
