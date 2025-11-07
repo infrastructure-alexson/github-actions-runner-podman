@@ -42,8 +42,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     # VCS and utilities
     openssh-client \
     openssh-server \
-    # Container tools (Podman - via containers.io repo)
+    # Container tools (Podman)
     podman \
+    podman-docker \
     skopeo \
     buildah \
     # Build essentials
@@ -79,15 +80,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* \
     && rm -rf /tmp/*
-
-# Add containers.io repository for podman-docker and other container tools
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    software-properties-common \
-    && add-apt-repository -y ppa:containers/stable \
-    && apt-get update && apt-get install -y --no-install-recommends \
-    podman-docker \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
 
 # Create runner user with home directory
 RUN groupadd -g ${RUNNER_GID} runner && \
