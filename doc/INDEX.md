@@ -7,6 +7,7 @@ All documentation for the GitHub Actions Self-Hosted Runner project.
 - **[QUICK-START.md](QUICK-START.md)** - Getting started guide
 
 ## Deployment & Setup
+- **[ORGANIZATION-SETUP.md](ORGANIZATION-SETUP.md)** - Adding runners to GitHub organization (Start Here!)
 - **[INSTALLATION.md](INSTALLATION.md)** - Installation instructions
 - **[DEPLOYMENT.md](DEPLOYMENT.md)** - Deployment options and steps
 - **[DEPLOYMENT-WITH-ORG-SECRET.md](DEPLOYMENT-WITH-ORG-SECRET.md)** - Deploying with organization secret (Best Practice)
