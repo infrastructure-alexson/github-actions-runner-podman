@@ -12,7 +12,8 @@ NC='\033[0m' # No Color
 
 # Configuration from environment
 GITHUB_REPO_URL="${GITHUB_REPO_URL:-}"
-GITHUB_TOKEN="${GITHUB_TOKEN:-}"
+# Accept either GITHUB_TOKEN or RUNNER_TOKEN (fallback to RUNNER_TOKEN)
+GITHUB_TOKEN="${GITHUB_TOKEN:-${RUNNER_TOKEN:-}}"
 GITHUB_ORG="${GITHUB_ORG:-}"
 RUNNER_NAME="${RUNNER_NAME:-$(hostname)}"
 RUNNER_LABELS="${RUNNER_LABELS:-podman,linux}"
