@@ -23,6 +23,11 @@ RUNNER_REPLACE="${RUNNER_REPLACE:-true}"
 RUNNER_HOME="${RUNNER_HOME:-/home/runner}"
 RUNNER_DIR="/opt/runner"
 
+# Ensure work directory is absolute path for proper config.sh handling
+if [[ ! "$RUNNER_WORK_DIR" = /* ]]; then
+    RUNNER_WORK_DIR="${RUNNER_HOME}/${RUNNER_WORK_DIR#./}"
+fi
+
 log_info() {
     echo -e "${GREEN}[INFO]${NC} $*"
 }
@@ -58,6 +63,10 @@ configure_runner() {
     
     cd "${RUNNER_DIR}"
     
+    # CRITICAL: Change to RUNNER_HOME so config.sh creates .runner there, not in /opt/runner
+    # This ensures credentials are in the mounted volume
+    cd "${RUNNER_HOME}"
+    
     # Ensure .runner directory exists with permissive permissions
     # This is critical for mounted volumes where permissions might be wrong
     if [[ ! -d "${RUNNER_HOME}/.runner" ]]; then
@@ -76,8 +85,10 @@ configure_runner() {
     log_info "Registration URL: $register_url"
     log_info "Runner Name: $RUNNER_NAME"
     log_info "Runner Labels: $RUNNER_LABELS"
+    log_info "Work Directory: ${RUNNER_WORK_DIR}"
     
     # Prepare registration arguments
+    # Use absolute path for work directory
     local config_args=(
         "--url" "$register_url"
         "--token" "${GITHUB_TOKEN}"
@@ -102,7 +113,7 @@ configure_runner() {
     config_args+=("--disableupdate")
     
     log_info "Registering runner with GitHub..."
-    if ./config.sh "${config_args[@]}"; then
+    if "${RUNNER_DIR}/config.sh" "${config_args[@]}"; then
         log_info "Runner registered successfully"
         
         # Fix ownership and permissions after config.sh
@@ -143,8 +154,9 @@ setup_signals() {
 }
 
 # Check if runner is already configured
+# Files are created in RUNNER_HOME/.runner, not RUNNER_DIR
 is_configured() {
-    [[ -f "${RUNNER_DIR}/.runner" ]] && [[ -f "${RUNNER_DIR}/.credentials" ]]
+    [[ -f "${RUNNER_HOME}/.runner/.runner" ]] || [[ -f "${RUNNER_HOME}/.config/GitHub/ActionsService/8.0/Cache/"* ]]
 }
 
 # Main execution
