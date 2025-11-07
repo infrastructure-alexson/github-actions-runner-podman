@@ -26,32 +26,35 @@
 
 ## Quick Setup for Org Runner
 
-### **Step 1**: Generate Organization Token
+### **Step 1**: Generate Organization Registration Token
 
-1. Go to: https://github.com/settings/tokens
-2. Click "Generate new token"
-3. Select **Classic** token type
-4. Name: `GitHub Actions Org Runner`
-5. **Scopes needed**:
-   - ✅ `admin:org_self_hosted_runners` (required for org runners)
-   - ✅ `repo` (full)
-   - ✅ `workflow`
-6. Click "Generate token"
-7. **Copy immediately** (shown only once!)
+⚠️ **IMPORTANT**: You need a **REGISTRATION TOKEN**, not a PAT!
+
+1. Go to: https://github.com/organizations/YOUR_ORG/settings/actions/runners/new
+2. Select: **Linux** (for Rocky Linux)
+3. GitHub shows a **Registration Token** (NOT a ghp_ token)
+   - Example: `AICVO4YB3NFC6XFZNENMBV3JBVF34`
+   - ⚠️ **Expires in 1 hour!**
+4. **Copy immediately** (you must use it within 1 hour!)
+
+**Note**: This is different from a Personal Access Token (PAT). The registration token is specifically for registering runners.
 
 ### **Step 2**: Set Environment Variables for Org Runner
 
 ```bash
 # For organization runner (NOT repository)
-export GITHUB_ORG=my-org
+export GITHUB_ORG=infrastructure-alexson
 
-# Your organization token
-export GITHUB_TOKEN=ghp_xxxx
+# Registration token (from Step 1, NOT a ghp_ token)
+# Example: AICVO4YB3NFC6XFZNENMBV3JBVF34
+export GITHUB_TOKEN=AICVO4YB3NFC6XFZNENMBV3JBVF34
 
 # Runner configuration
 export RUNNER_NAME=runner-01
 export RUNNER_LABELS=podman,linux,docker,x86_64
 ```
+
+⚠️ **Hurry!** You have **1 hour** to deploy the runner with this token before it expires!
 
 ### **Step 3**: Verify Variables
 
@@ -97,10 +100,11 @@ podman ps
 # Organization Runner Setup (NOT repo runner)
 GITHUB_ORG=my-org
 
-# Organization-level Personal Access Token
-# Generate at: https://github.com/settings/tokens
-# Scopes: admin:org_self_hosted_runners, repo, workflow
-GITHUB_TOKEN=ghp_xxxx_your_token_here
+# Organization-level REGISTRATION TOKEN (NOT a PAT!)
+# Generate at: https://github.com/organizations/YOUR_ORG/settings/actions/runners/new
+# ⚠️ EXPIRES IN 1 HOUR - Must be used immediately!
+# Example: AICVO4YB3NFC6XFZNENMBV3JBVF34
+GITHUB_TOKEN=AICVO4YB3NFC6XFZNENMBV3JBVF34
 
 # ==============================================================================
 # Runner Configuration
@@ -154,9 +158,13 @@ CACHE_DIR=./runner-cache
 # 1. Generate token at https://github.com/settings/tokens
 #    Scopes: admin:org_self_hosted_runners, repo, workflow
 
-# 2. Set environment
-export GITHUB_ORG=my-org
-export GITHUB_TOKEN=ghp_xxxx
+# 2. Get registration token from GitHub (expires in 1 hour!)
+# Go to: https://github.com/organizations/YOUR_ORG/settings/actions/runners/new
+# Copy the token shown
+
+# 3. Set environment
+export GITHUB_ORG=infrastructure-alexson
+export GITHUB_TOKEN=AICVO4YB3NFC6XFZNENMBV3JBVF34
 export RUNNER_NAME=runner-01
 export RUNNER_LABELS=podman,linux,docker,x86_64
 
