@@ -59,6 +59,7 @@ RUN microdnf install -y \
     # System utilities
     sudo \
     dbus \
+    hostname \
     # .NET Core dependencies (GitHub Actions Runner requirements)
     libicu \
     openssl \
