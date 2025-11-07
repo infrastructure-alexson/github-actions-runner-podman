@@ -58,9 +58,17 @@ configure_runner() {
     
     cd "${RUNNER_DIR}"
     
+    # Build registration URL
+    local register_url="${GITHUB_REPO_URL:-https://github.com/$GITHUB_ORG}"
+    
+    # Debug: Show what URL we're using
+    log_info "Registration URL: $register_url"
+    log_info "Runner Name: $RUNNER_NAME"
+    log_info "Runner Labels: $RUNNER_LABELS"
+    
     # Prepare registration arguments
     local config_args=(
-        "--url" "${GITHUB_REPO_URL:-https://github.com/$GITHUB_ORG}"
+        "--url" "$register_url"
         "--token" "${GITHUB_TOKEN}"
         "--name" "${RUNNER_NAME}"
         "--labels" "${RUNNER_LABELS}"
