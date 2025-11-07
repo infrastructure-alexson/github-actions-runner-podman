@@ -21,6 +21,10 @@ ENV RUNNER_ALLOW_RUNASROOT=false \
     RUNNER_HOME=/home/runner \
     PATH="/opt/runner/bin:${PATH}"
 
+# Disable subscription manager checks (not needed in containers)
+RUN rm -f /etc/yum/pluginconf.d/subscription-manager.conf && \
+    sed -i 's/enabled=1/enabled=0/g' /etc/yum/pluginconf.d/product-id.conf 2>/dev/null || true
+
 # Install base packages and dependencies using dnf (UBI 8 full)
 # dnf is the modern package manager in RHEL/UBI 8+
 # UBI 8 is x86-64-v1 compatible - includes baseline 64-bit x86 instructions
