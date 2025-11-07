@@ -36,6 +36,7 @@ RUN microdnf install -y \
     which \
     # Shell utilities
     bash \
+    glibc-langpack-en \
     # VCS and utilities
     openssh-clients \
     openssh-server \
