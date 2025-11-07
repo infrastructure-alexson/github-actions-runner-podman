@@ -1,17 +1,17 @@
 # GitHub Actions Runner - Podman Support
-# Enterprise-grade container image for self-hosted GitHub Actions runners
-# Based on Red Hat Universal Base Image 8 (UBI 8) - Full Edition
+# Production-ready container image for self-hosted GitHub Actions runners
+# Based on Rocky Linux 8 (community-supported RHEL clone)
 # 
 # Includes: Podman (with docker compatibility), Buildah, Skopeo for container image building
-# Uses UBI 8 for broader CPU compatibility (includes older x86-64 processors)
-# Uses full UBI 8 (not minimal) for better compatibility with GitHub Actions runner
+# Uses Rocky Linux 8 for broad CPU compatibility (x86-64-v1+, 2003+)
+# Rocky Linux is simpler, no subscription issues, proven GitHub Actions compatibility
 
-FROM registry.access.redhat.com/ubi8/ubi:latest
+FROM rockylinux:8
 
 LABEL maintainer="Infrastructure Team"
-LABEL description="GitHub Actions self-hosted runner with Podman support (docker compatible) - UBI 8 full image"
+LABEL description="GitHub Actions self-hosted runner with Podman support (docker compatible) - Rocky Linux 8 based"
 LABEL version="1.3.0"
-LABEL base_image="ubi8-full"
+LABEL base_image="rockylinux8"
 LABEL container_tools="podman,podman-docker,buildah,skopeo"
 
 # Set environment variables
@@ -21,13 +21,9 @@ ENV RUNNER_ALLOW_RUNASROOT=false \
     RUNNER_HOME=/home/runner \
     PATH="/opt/runner/bin:${PATH}"
 
-# Disable subscription manager checks (not needed in containers)
-RUN rm -f /etc/yum/pluginconf.d/subscription-manager.conf && \
-    sed -i 's/enabled=1/enabled=0/g' /etc/yum/pluginconf.d/product-id.conf 2>/dev/null || true
-
-# Install base packages and dependencies using dnf (UBI 8 full)
-# dnf is the modern package manager in RHEL/UBI 8+
-# UBI 8 is x86-64-v1 compatible - includes baseline 64-bit x86 instructions
+# Install base packages and dependencies using dnf (Rocky Linux 8)
+# dnf is the modern package manager in RHEL/Rocky 8+
+# Rocky Linux 8 is x86-64-v1 compatible - includes baseline 64-bit x86 instructions
 RUN dnf install -y \
     # Essential tools
     curl \
