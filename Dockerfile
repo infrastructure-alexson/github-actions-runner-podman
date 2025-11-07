@@ -1,30 +1,31 @@
 # GitHub Actions Runner - Podman Support
 # Production-ready container image for self-hosted GitHub Actions runners
-# Based on Rocky Linux 8 (community-supported RHEL clone)
+# Based on Ubuntu 22.04 LTS (officially recommended base for GitHub Actions)
 # 
 # Includes: Podman (with docker compatibility), Buildah, Skopeo for container image building
-# Uses Rocky Linux 8 for broad CPU compatibility (x86-64-v1+, 2003+)
-# Rocky Linux is simpler, no subscription issues, proven GitHub Actions compatibility
+# Uses Ubuntu 22.04 LTS for broad compatibility and being the official GitHub Actions base
+# Ubuntu is widely tested and most compatible with GitHub runner environment
 
-FROM rockylinux:8
+FROM ubuntu:22.04
 
 LABEL maintainer="Infrastructure Team"
-LABEL description="GitHub Actions self-hosted runner with Podman support (docker compatible) - Rocky Linux 8 based"
+LABEL description="GitHub Actions self-hosted runner with Podman support (docker compatible) - Ubuntu 22.04 based"
 LABEL version="1.3.0"
-LABEL base_image="rockylinux8"
+LABEL base_image="ubuntu2204"
 LABEL container_tools="podman,podman-docker,buildah,skopeo"
 
 # Set environment variables
-ENV RUNNER_ALLOW_RUNASROOT=false \
+ENV DEBIAN_FRONTEND=noninteractive \
+    RUNNER_ALLOW_RUNASROOT=false \
     RUNNER_UID=1001 \
     RUNNER_GID=1001 \
     RUNNER_HOME=/home/runner \
     PATH="/opt/runner/bin:${PATH}"
 
-# Install base packages and dependencies using dnf (Rocky Linux 8)
-# dnf is the modern package manager in RHEL/Rocky 8+
-# Rocky Linux 8 is x86-64-v1 compatible - includes baseline 64-bit x86 instructions
-RUN dnf install -y \
+# Install base packages and dependencies using apt (Ubuntu 22.04)
+# apt is the package manager in Ubuntu
+# Ubuntu 22.04 is x86-64-v1 compatible - includes baseline 64-bit x86 instructions
+RUN apt-get update && apt-get install -y --no-install-recommends \
     # Essential tools
     curl \
     wget \
@@ -38,9 +39,9 @@ RUN dnf install -y \
     which \
     # Shell utilities
     bash \
-    glibc-langpack-en \
+    locales \
     # VCS and utilities
-    openssh-clients \
+    openssh-client \
     openssh-server \
     # Container tools (Podman)
     podman \
@@ -50,13 +51,13 @@ RUN dnf install -y \
     buildah \
     # Build essentials
     gcc \
-    gcc-c++ \
+    g++ \
     make \
     pkg-config \
     # Programming languages
     python3 \
     python3-pip \
-    python3-devel \
+    python3-venv \
     # Node.js for common workflows
     nodejs \
     npm \
@@ -65,22 +66,21 @@ RUN dnf install -y \
     dbus \
     hostname \
     # .NET Core dependencies (GitHub Actions Runner requirements)
-    libicu \
-    openssl \
-    krb5-libs \
+    libicu70 \
+    libssl3 \
+    libkrb5-3 \
     # Additional utils
     sshpass \
     rsync \
-    vim-minimal \
-            # Cleanup
-            && dnf clean all \
-            && rm -rf /var/cache/dnf/* \
-            && rm -rf /tmp/*
+    vim-tiny \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* \
+    && rm -rf /tmp/*
 
 # Create runner user with home directory
 RUN groupadd -g ${RUNNER_GID} runner && \
     useradd -m -u ${RUNNER_UID} -g ${RUNNER_GID} -s /bin/bash runner && \
-    usermod -aG wheel runner && \
+    usermod -aG sudo runner && \
     # Add runner to podman group for rootless container support
     getent group podman >/dev/null && usermod -aG podman runner || true && \
     echo "runner ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers.d/runner && \
