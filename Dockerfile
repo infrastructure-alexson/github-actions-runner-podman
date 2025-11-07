@@ -9,7 +9,7 @@ FROM registry.access.redhat.com/ubi8/ubi-minimal:latest
 
 LABEL maintainer="Infrastructure Team"
 LABEL description="GitHub Actions self-hosted runner with Podman support (docker compatible) - UBI 8 based"
-LABEL version="1.1.1"
+LABEL version="1.1.2"
 LABEL base_image="ubi8"
 LABEL container_tools="podman,podman-docker,buildah,skopeo"
 
