@@ -9,6 +9,7 @@ All documentation for the GitHub Actions Self-Hosted Runner project.
 ## Deployment & Setup
 - **[INSTALLATION.md](INSTALLATION.md)** - Installation instructions
 - **[DEPLOYMENT.md](DEPLOYMENT.md)** - Deployment options and steps
+- **[DEPLOYMENT-WITH-ORG-SECRET.md](DEPLOYMENT-WITH-ORG-SECRET.md)** - Deploying with organization secret (Best Practice)
 - **[SYSTEMD-MANAGEMENT.md](SYSTEMD-MANAGEMENT.md)** - Systemd service management
 - **[SYSTEMD-QUICK-START.md](SYSTEMD-QUICK-START.md)** - Quick systemd setup
 
