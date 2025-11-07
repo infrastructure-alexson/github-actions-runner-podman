@@ -62,6 +62,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     sudo \
     dbus \
     hostname \
+    findutils \
+    procps \
     # .NET Core dependencies (GitHub Actions Runner requirements)
     libicu70 \
     libssl3 \
