@@ -192,15 +192,15 @@ main() {
     cd "${RUNNER_DIR}"
     
     # Ensure credentials are available in the working directory for the listener
-    # If already configured, copy from persistent volume back to /opt/runner for listener
-    if [[ -f "${RUNNER_HOME}/.runner/.runner" ]]; then
-        log_info "Syncing credentials from persistent volume to listener working directory..."
-        for file in .runner .credentials .credentials_rsaparams .env .path; do
-            if [[ -f "${RUNNER_HOME}/.runner/${file}" ]]; then
-                cp "${RUNNER_HOME}/.runner/${file}" "${RUNNER_DIR}/${file}" 2>/dev/null || true
-            fi
-        done
-    fi
+    # Always sync from persistent volume to /opt/runner working directory
+    # This ensures run.sh finds the credentials it needs
+    log_info "Syncing credentials to listener working directory..."
+    for file in .runner .credentials .credentials_rsaparams .env .path; do
+        if [[ -f "${RUNNER_HOME}/.runner/${file}" ]]; then
+            cp "${RUNNER_HOME}/.runner/${file}" "${RUNNER_DIR}/${file}" 2>/dev/null || true
+            log_info "Synced: ${file}"
+        fi
+    done
     
     # Use run.sh wrapper instead of calling Runner.Listener directly
     # run.sh handles proper initialization, polling setup, and graceful shutdown
