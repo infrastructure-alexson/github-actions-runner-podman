@@ -187,6 +187,14 @@ main() {
     # Validate environment
     validate_environment
     
+    # CRITICAL: Clean up any stale credentials from image build
+    # The runner binary extraction might create empty placeholder files
+    # We need to remove those to force fresh registration
+    if [[ ! -f "${RUNNER_HOME}/.runner/.runner" ]] && [[ -f "${RUNNER_DIR}/.runner" ]]; then
+        log_info "Removing stale credentials from image build..."
+        rm -f "${RUNNER_DIR}/.runner" "${RUNNER_DIR}/.credentials" "${RUNNER_DIR}/.credentials_rsaparams" 2>/dev/null || true
+    fi
+    
     # Configure runner if not already configured
     if is_configured; then
         log_warn "Runner already configured, skipping registration"
