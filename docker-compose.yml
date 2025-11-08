@@ -47,6 +47,10 @@ services:
     container_name: github-runner
     hostname: github-runner
     
+    # Load environment variables from .env file
+    env_file:
+      - .env
+    
     # SELinux: Disable label checking for this container only
     # This allows the runner to work with SELinux enforcing on the host
     # See: doc/HOST-SELINUX-FIX.md for details
