@@ -191,6 +191,17 @@ main() {
     log_info "Starting GitHub Actions Runner listener..."
     cd "${RUNNER_DIR}"
     
+    # Ensure credentials are available in the working directory for the listener
+    # If already configured, copy from persistent volume back to /opt/runner for listener
+    if [[ -f "${RUNNER_HOME}/.runner/.runner" ]]; then
+        log_info "Syncing credentials from persistent volume to listener working directory..."
+        for file in .runner .credentials .credentials_rsaparams .env .path; do
+            if [[ -f "${RUNNER_HOME}/.runner/${file}" ]]; then
+                cp "${RUNNER_HOME}/.runner/${file}" "${RUNNER_DIR}/${file}" 2>/dev/null || true
+            fi
+        done
+    fi
+    
     # Execute the runner with passed arguments or use default
     exec ./bin/Runner.Listener run --startuptype service "${@:---startuptype service}"
 }
