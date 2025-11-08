@@ -116,11 +116,20 @@ configure_runner() {
     if "${RUNNER_DIR}/config.sh" "${config_args[@]}"; then
         log_info "Runner registered successfully"
         
-        # Fix ownership and permissions after config.sh
-        # config.sh might create files with wrong ownership
-        sudo chown -R runner:runner "${RUNNER_HOME}/.runner" 2>/dev/null || chown -R runner:runner "${RUNNER_HOME}/.runner" 2>/dev/null || true
+        # CRITICAL: Copy credentials from /opt/runner to mounted volume
+        # config.sh creates files in /opt/runner, but we need them in the mounted volume
+        log_info "Copying runner credentials to persistent volume..."
         
-        # Make sure runner can read all files, even if created by root
+        # Copy key credential files to mounted volume
+        for file in .runner .credentials .credentials_rsaparams .env .path; do
+            if [[ -f "${RUNNER_DIR}/${file}" ]]; then
+                sudo cp "${RUNNER_DIR}/${file}" "${RUNNER_HOME}/.runner/${file}" 2>/dev/null || cp "${RUNNER_DIR}/${file}" "${RUNNER_HOME}/.runner/${file}" 2>/dev/null || true
+                log_info "Copied ${file} to persistent volume"
+            fi
+        done
+        
+        # Fix ownership and permissions on persistent volume
+        sudo chown -R runner:runner "${RUNNER_HOME}/.runner" 2>/dev/null || chown -R runner:runner "${RUNNER_HOME}/.runner" 2>/dev/null || true
         sudo chmod -R u+r,u+w,g-rwx,o-rwx "${RUNNER_HOME}/.runner" 2>/dev/null || chmod -R u+r,u+w,g-rwx,o-rwx "${RUNNER_HOME}/.runner" 2>/dev/null || true
         sudo find "${RUNNER_HOME}/.runner" -type f -exec chmod 600 {} \; 2>/dev/null || find "${RUNNER_HOME}/.runner" -type f -exec chmod 600 {} \; 2>/dev/null || true
         sudo find "${RUNNER_HOME}/.runner" -type d -exec chmod 700 {} \; 2>/dev/null || find "${RUNNER_HOME}/.runner" -type d -exec chmod 700 {} \; 2>/dev/null || true
@@ -154,9 +163,9 @@ setup_signals() {
 }
 
 # Check if runner is already configured
-# Files are created in RUNNER_HOME/.runner, not RUNNER_DIR
+# Files are created in RUNNER_DIR (/opt/runner) or copied to RUNNER_HOME/.runner
 is_configured() {
-    [[ -f "${RUNNER_HOME}/.runner/.runner" ]] || [[ -f "${RUNNER_HOME}/.config/GitHub/ActionsService/8.0/Cache/"* ]]
+    [[ -f "${RUNNER_DIR}/.runner" ]] || [[ -f "${RUNNER_HOME}/.runner/.runner" ]]
 }
 
 # Main execution
