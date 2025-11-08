@@ -163,9 +163,16 @@ setup_signals() {
 }
 
 # Check if runner is already configured
-# Files are created in RUNNER_DIR (/opt/runner) or copied to RUNNER_HOME/.runner
+# Runner is configured if .runner file exists in either location
+# Returns 0 (true) if configured, 1 (false) if not
 is_configured() {
-    [[ -f "${RUNNER_DIR}/.runner" ]] || [[ -f "${RUNNER_HOME}/.runner/.runner" ]]
+    if [[ -f "${RUNNER_DIR}/.runner" ]] && [[ -f "${RUNNER_DIR}/.credentials" ]]; then
+        return 0  # Configured in /opt/runner
+    elif [[ -f "${RUNNER_HOME}/.runner/.runner" ]] && [[ -f "${RUNNER_HOME}/.runner/.credentials" ]]; then
+        return 0  # Configured in persistent volume
+    else
+        return 1  # Not configured
+    fi
 }
 
 # Main execution
