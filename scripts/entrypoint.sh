@@ -187,18 +187,20 @@ main() {
     # Validate environment
     validate_environment
     
-    # CRITICAL: Clean up any stale credentials from image build
-    # The runner binary extraction might create empty placeholder files
-    # We need to remove those to force fresh registration
-    if [[ ! -f "${RUNNER_HOME}/.runner/.runner" ]] && [[ -f "${RUNNER_DIR}/.runner" ]]; then
-        log_info "Removing stale credentials from image build..."
-        rm -f "${RUNNER_DIR}/.runner" "${RUNNER_DIR}/.credentials" "${RUNNER_DIR}/.credentials_rsaparams" 2>/dev/null || true
-    fi
-    
-    # Configure runner if not already configured
-    if is_configured; then
+    # Always attempt to sync from persistent volume first
+    # This ensures we use credentials from volume if they exist
+    if [[ -f "${RUNNER_HOME}/.runner/.runner" ]] && [[ -f "${RUNNER_HOME}/.runner/.credentials" ]]; then
+        log_info "Found credentials in persistent volume, syncing to working directory..."
+        for file in .runner .credentials .credentials_rsaparams .env .path; do
+            if [[ -f "${RUNNER_HOME}/.runner/${file}" ]]; then
+                cp "${RUNNER_HOME}/.runner/${file}" "${RUNNER_DIR}/${file}" 2>/dev/null || true
+            fi
+        done
         log_warn "Runner already configured, skipping registration"
     else
+        # No credentials in persistent volume, force fresh registration
+        log_info "No valid credentials found, forcing fresh registration..."
+        rm -f "${RUNNER_DIR}/.runner" "${RUNNER_DIR}/.credentials" "${RUNNER_DIR}/.credentials_rsaparams" "${RUNNER_DIR}/.env" "${RUNNER_DIR}/.path" 2>/dev/null || true
         configure_runner
     fi
     
