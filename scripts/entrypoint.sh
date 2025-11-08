@@ -202,8 +202,10 @@ main() {
         done
     fi
     
-    # Execute the runner with passed arguments or use default
-    exec ./bin/Runner.Listener run --startuptype service "${@:---startuptype service}"
+    # Use run.sh wrapper instead of calling Runner.Listener directly
+    # run.sh handles proper initialization, polling setup, and graceful shutdown
+    # This is the recommended approach from official GitHub Actions runner documentation
+    exec ./run.sh
 }
 
 # Execute main function
